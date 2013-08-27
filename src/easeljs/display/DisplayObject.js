@@ -504,6 +504,15 @@ var p = DisplayObject.prototype;
 	p.hitArea = null;
 	
 	/**
+	 * A createjs.Rectangle object used for all hit testing. This is used in place of hitArea or pixel testing, and should be much
+	 * faster in addition to working with cross domain images.
+	 * @property hitRect
+	 * @type {Rectangle}
+	 * @default null
+	 */
+	p.hitRect = null;
+	
+	/**
 	 * A CSS cursor (ex. "pointer", "help", "text", etc) that will be displayed when the user hovers over this display
 	 * object. You must enable mouseover events using the {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}} method to
 	 * use this property. If null it will use the default cursor.
@@ -922,14 +931,21 @@ var p = DisplayObject.prototype;
 	 * local Point.
 	*/
 	p.hitTest = function(x, y) {
-		var ctx = DisplayObject._hitTestContext;
-		ctx.setTransform(1, 0, 0, 1, -x, -y);
-		this.draw(ctx);
+		if(this.hitRect)
+		{
+			return this.hitRect.contains(x, y);
+		}
+		else
+		{
+			var ctx = DisplayObject._hitTestContext;
+			ctx.setTransform(1, 0, 0, 1, -x, -y);
+			this.draw(ctx);
 
-		var hit = this._testHit(ctx);
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.clearRect(0, 0, 2, 2);
-		return hit;
+			var hit = this._testHit(ctx);
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.clearRect(0, 0, 2, 2);
+			return hit;
+		}
 	};
 	
 	/**

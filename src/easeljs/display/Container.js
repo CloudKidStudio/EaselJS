@@ -521,10 +521,20 @@ var p = Container.prototype = new createjs.DisplayObject();
 	 * @protected
 	 **/
 	p._getObjectsUnderPoint = function(x, y, arr, mouseEvents) {
+		
+		if(this.hitRect)
+		{
+			var mtx = this.getConcatenatedMatrix(this._matrix);
+			if (mtx == null) { return this.hitRect.contains(x, y) ? this : null; }
+			mtx.invert();
+			mtx.append(1, 0, 0, 1, x, y);
+			return this.hitRect.contains(mtx.tx, mtx.ty) ? this : null;
+		}
+		
 		var ctx = createjs.DisplayObject._hitTestContext;
 		var mtx = this._matrix;
 		var hasHandler = this._hasMouseHandler(mouseEvents);
-
+		
 		// if we have a cache handy & this has a handler, we can use it to do a quick check.
 		// we can't use the cache for screening children, because they might have hitArea set.
 		if (!this.hitArea && this.cacheCanvas && hasHandler) {
@@ -559,6 +569,29 @@ var p = Container.prototype = new createjs.DisplayObject();
 					if (!arr && result) { return result; }
 				}
 			} else if (!mouseEvents || hasHandler || childHasHandler) {
+				
+				if(child.hitRect)
+				{
+					var mtx = child.getConcatenatedMatrix(child._matrix);
+					var result;
+					if (mtx == null) {
+						result = child.hitRect.contains(x, y);
+					}
+					else {
+						mtx.invert();
+						mtx.append(1, 0, 0, 1, x, y);
+						result = child.hitRect.contains(mtx.tx, mtx.ty);
+					}
+					if(result)
+					{
+						if (hasHandler) { return this; }
+						else if (arr) { arr.push(child); }
+						else { return child; }
+					}
+					else 
+						continue;
+				}
+				
 				child.getConcatenatedMatrix(mtx);
 				
 				if (hitArea) {

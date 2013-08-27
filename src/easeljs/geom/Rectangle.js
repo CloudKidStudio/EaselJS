@@ -100,6 +100,17 @@ var p = Rectangle.prototype;
 	p.clone = function() {
 		return new Rectangle(this.x, this.y, this.width, this.height);
 	}
+	
+	/**
+	 * Determines if a specified point is inside this rectangle
+	 * @method contains
+	 * @param {Number} x The x position to check in the rectangle.
+	 * @param {Number} y The y position to check in the rectangle.
+	 * @return {Boolean} A Boolean indicating if the point is inside this rectangle.
+	 **/
+	p.contains = function(x, y) {
+		return x >= this.x && y >= this.y && x <= this.x + this.width && y <= this.y + this.height;
+	}
 
 	/**
 	 * Returns a string representation of this object.
