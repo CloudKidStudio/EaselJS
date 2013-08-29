@@ -590,7 +590,7 @@ var p = Stage.prototype = new createjs.Container();
 	 * @param {MouseEvent} e
 	 **/
 	p._handleMouseUp = function(e) {
-		this._handlePointerUp(-1, e, false);
+		this._handlePointerUp(-1, e, true);
 	}
 	
 	/**
