@@ -230,6 +230,7 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleStart = function(stage, id, e, x, y) {
+		e.preventDefault();
 		var props = stage.__touch;
 		if (!props.multitouch && props.count) { return; }
 		var ids = props.pointers;
@@ -244,6 +245,7 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleMove = function(stage, id, e, x, y) {
+		e.preventDefault();
 		if (!stage.__touch.pointers[id]) { return; }
 		stage._handlePointerMove(id, e, x, y);
 	};
@@ -253,6 +255,7 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleEnd = function(stage, id, e) {
+		e.preventDefault();
 		// TODO: cancel should be handled differently for proper UI (ex. an up would trigger a click, a cancel would more closely resemble an out).
 		var props = stage.__touch;
 		var ids = props.pointers;
