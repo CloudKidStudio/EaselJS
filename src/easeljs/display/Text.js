@@ -142,6 +142,15 @@ var p = Text.prototype = new createjs.DisplayObject();
 	 **/
 	p.lineWidth = null;
 	
+	/**
+	 * The optional style for a stroke. This should have width and color properties to describe the stroke.
+	 * Text is only stroked if outline is false.
+	 * @property stroke
+	 * @type Object
+	 * @optional
+	 **/
+	p.stroke = null;
+	
 // constructor:
 	/**
 	 * @property DisplayObject_initialize
@@ -199,6 +208,11 @@ var p = Text.prototype = new createjs.DisplayObject();
 		ctx.font = this.font;
 		ctx.textAlign = this.textAlign||"start";
 		ctx.textBaseline = this.textBaseline||"alphabetic";
+		if(this.stroke && !this.outline)
+		{
+			ctx.lineWidth = this.stroke.width;
+			ctx.strokeStyle = this.stroke.color;
+		}
 
 		this._drawText(ctx);
 		return true;
@@ -277,6 +291,7 @@ var p = Text.prototype = new createjs.DisplayObject();
 		o.outline = this.outline;
 		o.lineHeight = this.lineHeight;
 		o.lineWidth = this.lineWidth;
+		o.stroke = this.stroke;
 	}
 
 	/** 
@@ -340,7 +355,11 @@ var p = Text.prototype = new createjs.DisplayObject();
 	p._drawTextLine = function(ctx, text, y) {
 		// Chrome 17 will fail to draw the text if the last param is included but null, so we feed it a large value instead:
 			if (this.outline) { ctx.strokeText(text, 0, y, this.maxWidth||0xFFFF); }
-			else { ctx.fillText(text, 0, y, this.maxWidth||0xFFFF); }
+			else {
+				if(this.stroke)
+					ctx.strokeText(text, 0, y, this.maxWidth || 0xFFFF);
+				ctx.fillText(text, 0, y, this.maxWidth||0xFFFF);
+			}
 		
 	}
 
