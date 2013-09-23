@@ -269,9 +269,14 @@ var p = Container.prototype = new createjs.DisplayObject();
 	 *
 	 * @method removeAllChildren
 	 **/
-	p.removeAllChildren = function() {
+	p.removeAllChildren = function(recurse) {
 		var kids = this.children;
-		while (kids.length) { kids.pop().parent = null; }
+		while (kids.length) {
+			var k = kids.pop();
+			k.parent = null;
+			if(recurse&&k.removeAllChildren)
+				k.removeAllChildren(recurse);
+		}
 	}
 
 	/**
