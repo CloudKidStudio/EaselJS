@@ -102,7 +102,7 @@ var Touch = function() {
 	 * @static
 	 **/
 	Touch.disable = function(stage) {
-		if (!stage) { return; }
+		if (!stage || !stage.__touch) { return; }
 		if ('ontouchstart' in window) { Touch._IOS_disable(stage); }
 		else if (window.navigator['msPointerEnabled']) { Touch._IE_disable(stage); }
 	};
