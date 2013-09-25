@@ -785,13 +785,20 @@ var p = DisplayObject.prototype;
 	 * @method localToGlobal
 	 * @param {Number} x The x position in the source display object to transform.
 	 * @param {Number} y The y position in the source display object to transform.
+	 * @param {Point} outPoint=null A point to use as the output instead of creating a new one.
 	 * @return {Point} A Point instance with x and y properties correlating to the transformed coordinates
 	 * on the stage.
 	 **/
-	p.localToGlobal = function(x, y) {
+	p.localToGlobal = function(x, y, outPoint) {
 		var mtx = this.getConcatenatedMatrix(this._matrix);
 		if (mtx == null) { return null; }
 		mtx.append(1, 0, 0, 1, x, y);
+		if(outPoint)
+		{
+			outPoint.x = mtx.tx;
+			outPoint.y = mtx.ty;
+			return outPoint;
+		}
 		return new createjs.Point(mtx.tx, mtx.ty);
 	}
 
@@ -812,14 +819,21 @@ var p = DisplayObject.prototype;
 	 * @method globalToLocal
 	 * @param {Number} x The x position on the stage to transform.
 	 * @param {Number} y The y position on the stage to transform.
+	 * @param {Point} outPoint=null A point to use as the output instead of creating a new one.
 	 * @return {Point} A Point instance with x and y properties correlating to the transformed position in the
 	 * display object's coordinate space.
 	 **/
-	p.globalToLocal = function(x, y) {
+	p.globalToLocal = function(x, y, outPoint) {
 		var mtx = this.getConcatenatedMatrix(this._matrix);
 		if (mtx == null) { return null; }
 		mtx.invert();
 		mtx.append(1, 0, 0, 1, x, y);
+		if(outPoint)
+		{
+			outPoint.x = mtx.tx;
+			outPoint.y = mtx.ty;
+			return outPoint;
+		}
 		return new createjs.Point(mtx.tx, mtx.ty);
 	}
 
@@ -836,12 +850,13 @@ var p = DisplayObject.prototype;
 	 * @param {Number} x The x position in the source display object to transform.
 	 * @param {Number} y The y position on the stage to transform.
 	 * @param {DisplayObject} target The target display object to which the coordinates will be transformed.
+	 * @param {Point} outPoint=null A point to use as the output instead of creating a new one.
 	 * @return {Point} Returns a Point instance with x and y properties correlating to the transformed position
 	 * in the target's coordinate space.
 	 **/
-	p.localToLocal = function(x, y, target) {
-		var pt = this.localToGlobal(x, y);
-		return target.globalToLocal(pt.x, pt.y);
+	p.localToLocal = function(x, y, target, outPoint) {
+		var pt = this.localToGlobal(x, y, outPoint);
+		return target.globalToLocal(pt.x, pt.y, pt);
 	}
 
 	/**
