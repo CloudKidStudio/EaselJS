@@ -117,7 +117,7 @@ var Touch = function() {
 	 **/
 	Touch._IOS_enable = function(stage) {
 		var canvas = stage.canvas;
-		var f = stage.__touch.f = function(e) { Touch._IOS_handleEvent(stage,e); };
+		var f = stage.__touch.f = function(e,external) { Touch._IOS_handleEvent(stage,e,external); };
 		canvas.addEventListener("touchstart", f, false);
 		canvas.addEventListener("touchmove", f, false);
 		canvas.addEventListener("touchend", f, false);
@@ -145,15 +145,16 @@ var Touch = function() {
 	 * @protected
 	 * @static
 	 **/
-	Touch._IOS_handleEvent = function(stage, e) {
+	Touch._IOS_handleEvent = function(stage, e, external) {
 		if (!stage) { return; }
 		if (stage.__touch.preventDefault) { e.preventDefault&&e.preventDefault(); }
+		
 		var touches = e.changedTouches;
 		var type = e.type;
 		for (var i= 0,l=touches.length; i<l; i++) {
 			var touch = touches[i];
 			var id = touch.identifier;
-			if (touch.target != stage.canvas) { continue; }
+			if (!external && touch.target != stage.canvas) { continue; }
 			
 			if (type == "touchstart") {
 				this._handleStart(stage, id, e, touch.pageX, touch.pageY);
@@ -173,7 +174,7 @@ var Touch = function() {
 	 **/
 	Touch._IE_enable = function(stage) {
 		var canvas = stage.canvas;
-		var f = stage.__touch.f = function(e) { Touch._IE_handleEvent(stage,e); };
+		var f = stage.__touch.f = function(e,external) { Touch._IE_handleEvent(stage,e,external); };
 		canvas.addEventListener("MSPointerDown", f, false);
 		window.addEventListener("MSPointerMove", f, false);
 		window.addEventListener("MSPointerUp", f, false);
@@ -203,7 +204,7 @@ var Touch = function() {
 	 * @protected
 	 * @static
 	 **/
-	Touch._IE_handleEvent = function(stage, e) {
+	Touch._IE_handleEvent = function(stage, e, external) {
 		if (!stage) { return; }
 		if (stage.__touch.preventDefault) { e.preventDefault&&e.preventDefault(); }
 		var type = e.type;
@@ -211,7 +212,7 @@ var Touch = function() {
 		var ids = stage.__touch.activeIDs;
 		
 		if (type == "MSPointerDown") {
-			if (e.srcElement != stage.canvas) { return; }
+			if (!external && e.srcElement != stage.canvas) { return; }
 			ids[id] = true;
 			this._handleStart(stage, id, e, e.pageX, e.pageY);
 		} else if (ids[id]) { // it's an id we're watching
