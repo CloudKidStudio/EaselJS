@@ -1,0 +1,18 @@
+{
+    "name": "EaselJS",
+    "version": "0.6.1",
+    "main": "lib/easeljs-0.6.1.min.js",
+    "ignore": [
+        "README.md",
+        "README_CREATEJS_NAMESPACE.txt",
+        "README_SECURITY_ERROR.txt",
+        "VERSIONS.txt",
+        "tutorials",
+        "tools",
+        "src",
+        "examples",
+        "docs",
+        "build",
+        "lib/README.txt"
+    ]
+}
