@@ -1,5 +1,5 @@
 {
-    "name": "EaselJS",
+    "name": "easeljs",
     "version": "0.6.1",
     "main": "lib/easeljs-0.6.1.min.js",
     "ignore": [
