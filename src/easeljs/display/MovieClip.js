@@ -204,6 +204,14 @@ var p = MovieClip.prototype = new createjs.Container();
 	 */
 	p.autoReset = true;
 	
+	/**
+	 * If true, the MovieClip will advance its timeline during ticks. If false then it must be externally advanced.
+	 * @property advanceDuringTicks
+	 * @type Boolean
+	 * @default true
+	 */
+	p.advanceDuringTicks = true;
+	
 // private properties:	
 	
 	/**
@@ -422,14 +430,15 @@ var p = MovieClip.prototype = new createjs.Container();
 		if (!this.paused && this.mode == MovieClip.INDEPENDENT) {
 			if(this._animFrameRate)
 			{
-				this._elapsedTime += params[0] * 0.001;//elapsed, milliseconds -> seconds
+				if(this.advanceDuringTicks)
+					this._elapsedTime += params[0] * 0.001;//elapsed, milliseconds -> seconds
 				if(this._elapsedTime > this._duration)
 					this._elapsedTime = this.timeline.loop ? this._elapsedTime - this._duration : this._duration;
 				this._prevPosition = Math.floor(this._elapsedTime * this._animFrameRate);
 				if(this._prevPosition > this.timeline.duration)
 					this._prevPosition = this.timeline.duration;
 			}
-			else
+			else if(this.advanceDuringTicks)
 				this._prevPosition = (this._prevPos < 0) ? 0 : this._prevPosition+1;
 		}
 		this.Container__tick(params);
