@@ -246,7 +246,7 @@ var p = MovieClip.prototype = new createjs.Container();
 	 * @type {Number}
 	 * @default 0
 	 **/
-	Object.defineProperty(PIXI.DisplayObject.prototype, 'framerate', {
+	Object.defineProperty(p, 'framerate', {
 	    get: function() {
 	        return this._framerate;
 	    },
@@ -263,7 +263,7 @@ var p = MovieClip.prototype = new createjs.Container();
 	 * @default 0
 	 * @public
 	 */
-	Object.defineProperty(PIXI.DisplayObject.prototype, 'elapsedTime', {
+	Object.defineProperty(p, 'elapsedTime', {
 	    get: function() {
 	        return this._t;
 	    },
@@ -283,7 +283,7 @@ var p = MovieClip.prototype = new createjs.Container();
 	 * @private
 	 * @deprecated
 	 */
-	Object.defineProperty(PIXI.DisplayObject.prototype, '_animFrameRate', {
+	Object.defineProperty(p, '_animFrameRate', {
 	    get: function() {
 	        return this._framerate;
 	    },
@@ -312,7 +312,7 @@ var p = MovieClip.prototype = new createjs.Container();
 	 * @private
 	 * @deprecated
 	 */
-	Object.defineProperty(PIXI.DisplayObject.prototype, '_elapsedTime', {
+	Object.defineProperty(p, '_elapsedTime', {
 	    get: function() {
 	        return this._t;
 	    },

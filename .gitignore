@@ -20,3 +20,5 @@ config.local.json
 # (for cross OS compatibility)
 #-----------------------------
 *[\<\>\:\"\/\\\|\?\*]*
+
+build/npm-debug.log
