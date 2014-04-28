@@ -593,7 +593,8 @@ var p = Container.prototype = new createjs.DisplayObject();
 		activeListener = activeListener || (mouse&&this._hasMouseEventListener());
 
 		// draw children one at a time, and check if we get a hit:
-		var l = this.children.length;
+		var children = this.children;
+		var l = children.length;
 		for (var i=l-1; i>=0; i--) {
 			var child = children[i];
 			var hitArea = child.hitArea, mask = child.mask;
