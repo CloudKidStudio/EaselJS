@@ -252,7 +252,7 @@ var p = MovieClip.prototype = new createjs.Container();
 	    },
 	    set: function(value) {
 			this._framerate = value;
-			this._duration = fps ? this.timeline.duration / fps : 0;
+			this._duration = value ? this.timeline.duration / value : 0;
 	    }
 	});
 
