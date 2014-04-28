@@ -613,7 +613,7 @@ var p = Container.prototype = new createjs.DisplayObject();
 				}
 				if(result)
 				{
-					if (hasHandler) { return this; }
+					if (activeListener) { return this; }
 					else if (arr) { arr.push(child); }
 					else { return child; }
 				}
