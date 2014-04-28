@@ -37,7 +37,7 @@
  * <ul>
  *      <li>Images using {{#crossLink "Bitmap"}}{{/crossLink}}</li>
  *      <li>Vector graphics using {{#crossLink "Shape"}}{{/crossLink}} and {{#crossLink "Graphics"}}{{/crossLink}}</li>
- *      <li>Animated bitmaps using {{#crossLink "SpriteSheet"}}{{/crossLink}} and {{#crossLink "BitmapAnimation"}}{{/crossLink}}
+ *      <li>Animated bitmaps using {{#crossLink "SpriteSheet"}}{{/crossLink}} and {{#crossLink "Sprite"}}{{/crossLink}}
  *      <li>Simple text instances using {{#crossLink "Text"}}{{/crossLink}}</li>
  *      <li>Containers that hold other DisplayObjects using {{#crossLink "Container"}}{{/crossLink}}</li>
  *      <li>Control HTML DOM elements using {{#crossLink "DOMElement"}}{{/crossLink}}</li>
@@ -102,7 +102,7 @@
  * <ul><li>Canvas features such as {{#crossLink "Shadow"}}{{/crossLink}} and CompositeOperation</li>
  *      <li>{{#crossLink "Ticker"}}{{/crossLink}}, a global heartbeat that objects can subscribe to</li>
  *      <li>Filters, including a provided {{#crossLink "ColorMatrixFilter"}}{{/crossLink}}, {{#crossLink "AlphaMaskFilter"}}{{/crossLink}},
- *      {{#crossLink "AlphaMapFilter"}}{{/crossLink}}, and {{#crossLink "BoxBlurFilter"}}{{/crossLink}}. See {{#crossLink "Filter"}}{{/crossLink}}
+ *      {{#crossLink "AlphaMapFilter"}}{{/crossLink}}, and {{#crossLink "BlurFilter"}}{{/crossLink}}. See {{#crossLink "Filter"}}{{/crossLink}}
  *      for more information</li>
  *      <li>A {{#crossLink "ButtonHelper"}}{{/crossLink}} utility, to easily create interactive buttons</li>
  *      <li>{{#crossLink "SpriteSheetUtils"}}{{/crossLink}} and a {{#crossLink "SpriteSheetBuilder"}}{{/crossLink}} to
@@ -115,13 +115,13 @@
  * slower on average than most other browsers.
  *
  * @module EaselJS
+ * @main EaselJS
  */
 
 // namespace:
 this.createjs = this.createjs||{};
 
 (function() {
-
 /**
  * DisplayObject is an abstract class that should not be constructed directly. Instead construct subclasses such as
  * {{#crossLink "Container"}}{{/crossLink}}, {{#crossLink "Bitmap"}}{{/crossLink}}, and {{#crossLink "Shape"}}{{/crossLink}}.
@@ -129,23 +129,43 @@ this.createjs = this.createjs||{};
  * methods that are shared between all display objects, such as transformation properties (x, y, scaleX, scaleY, etc),
  * caching, and mouse handlers.
  * @class DisplayObject
- * @uses EventDispatcher
+ * @extends EventDispatcher
  * @constructor
  **/
 var DisplayObject = function() {
   this.initialize();
-}
-var p = DisplayObject.prototype;
+};
+var p = DisplayObject.prototype = new createjs.EventDispatcher();
+	
+	
+// static properties:
+	/**
+	 * Listing of mouse event names. Used in _hasMouseEventListener.
+	 * @property _MOUSE_EVENTS
+	 * @protected
+	 * @static
+	 * @type {Array}
+	 **/
+	DisplayObject._MOUSE_EVENTS = ["click","dblclick","mousedown","mouseout","mouseover","pressmove","pressup","rollout","rollover"];
 
 	/**
-	 * Suppresses errors generated when using features like hitTest, mouse events, and getObjectsUnderPoint with cross
-	 * domain content
+	 * Suppresses errors generated when using features like hitTest, mouse events, and {{#crossLink "getObjectsUnderPoint"}}{{/crossLink}}
+	 * with cross domain content.
 	 * @property suppressCrossDomainErrors
 	 * @static
 	 * @type {Boolean}
 	 * @default false
 	 **/
 	DisplayObject.suppressCrossDomainErrors = false;
+	
+	/**
+	 * @property _snapToPixelEnabled
+	 * @protected
+	 * @static
+	 * @type {Boolean}
+	 * @default false
+	 **/
+	DisplayObject._snapToPixelEnabled = false; // stage.snapToPixelEnabled is temporarily copied here during a draw to provide global access.
 
 	/**
 	 * @property _hitTestCanvas
@@ -153,16 +173,18 @@ var p = DisplayObject.prototype;
 	 * @static
 	 * @protected
 	 **/
-	DisplayObject._hitTestCanvas = createjs.createCanvas?createjs.createCanvas():document.createElement("canvas");
-	DisplayObject._hitTestCanvas.width = DisplayObject._hitTestCanvas.height = 1;
-
 	/**
 	 * @property _hitTestContext
 	 * @type {CanvasRenderingContext2D}
 	 * @static
 	 * @protected
 	 **/
-	DisplayObject._hitTestContext = DisplayObject._hitTestCanvas.getContext("2d");
+	var canvas = createjs.createCanvas?createjs.createCanvas():document.createElement("canvas"); // prevent errors on load in browsers without canvas.
+	if (canvas.getContext) {
+		DisplayObject._hitTestCanvas = canvas;
+		DisplayObject._hitTestContext = canvas.getContext("2d");
+		canvas.width = canvas.height = 1;
+	}
 
 	/**
 	 * @property _nextCacheID
@@ -196,27 +218,83 @@ var p = DisplayObject.prototype;
 	 */
 	 
 	/**
-	 * Dispatched when the user's mouse rolls over this display object. This event must be enabled using 
-	 * {{#crossLink "Stage.enableMouseOver"}}{{/crossLink}}.
+	 * Dispatched when the user's mouse enters this display object. This event must be enabled using 
+	 * {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}. See also {{#crossLink "DisplayObject/rollover:event"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event mouseover
 	 * @since 0.6.0
 	 */
-	 
-	
+
 	/**
-	 * Dispatched when the user's mouse rolls out of this display object. This event must be enabled using 
-	 * {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}.
+	 * Dispatched when the user's mouse leaves this display object. This event must be enabled using 
+	 * {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}. See also {{#crossLink "DisplayObject/rollout:event"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event mouseout
 	 * @since 0.6.0
 	 */
 	 
 	/**
+	 * This event is similar to {{#crossLink "DisplayObject/mouseover:event"}}{{/crossLink}}, with the following
+	 * differences: it does not bubble, and it considers {{#crossLink "Container"}}{{/crossLink}} instances as an
+	 * aggregate of their content.
+	 * 
+	 * For example, myContainer contains two overlapping children: shapeA and shapeB. The user moves their mouse over
+	 * shapeA and then directly on to shapeB. With a listener for {{#crossLink "mouseover:event"}}{{/crossLink}} on
+	 * myContainer, two events would be received, each targeting a child element:<OL>
+	 * <LI>when the mouse enters shapeA (target=shapeA)</LI>
+	 * <LI>when the mouse enters shapeB (target=shapeB)</LI>
+	 * </OL>
+	 * However, with a listener for "rollover" instead, only a single event is received when the mouse first enters
+	 * the aggregate myContainer content (target=myContainer).
+	 * 
+	 * This event must be enabled using {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}.
+	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
+	 * @event rollover
+	 * @since 0.7.0
+	 */
+	 
+	/**
+	 * This event is similar to {{#crossLink "DisplayObject/mouseout:event"}}{{/crossLink}}, with the following
+	 * differences: it does not bubble, and it considers {{#crossLink "Container"}}{{/crossLink}} instances as an
+	 * aggregate of their content.
+	 * 
+	 * For example, myContainer contains two overlapping children: shapeA and shapeB. The user moves their mouse over
+	 * shapeA, then directly on to shapeB, then off both. With a listener for {{#crossLink "mouseout:event"}}{{/crossLink}}
+	 * on myContainer, two events would be received, each targeting a child element:<OL>
+	 * <LI>when the mouse leaves shapeA (target=shapeA)</LI>
+	 * <LI>when the mouse leaves shapeB (target=shapeB)</LI>
+	 * </OL>
+	 * However, with a listener for "rollout" instead, only a single event is received when the mouse leaves
+	 * the aggregate myContainer content (target=myContainer).
+	 * 
+	 * This event must be enabled using {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}.
+	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
+	 * @event rollout
+	 * @since 0.7.0
+	 */
+	 
+	/**
+	 * After a {{#crossLink "DisplayObject/mousedown:event"}}{{/crossLink}} occurs on a display object, a pressmove
+	 * event will be generated on that object whenever the mouse moves until the mouse press is released. This can be
+	 * useful for dragging and similar operations.
+	 * @event pressmove
+	 * @since 0.7.0
+	 */
+	 
+	/**
+	 * After a {{#crossLink "DisplayObject/mousedown:event"}}{{/crossLink}} occurs on a display object, a pressup event
+	 * will be generated on that object when that mouse press is released. This can be useful for dragging and similar
+	 * operations.
+	 * @event pressup
+	 * @since 0.7.0
+	 */
+	 
+	/**
 	 * Dispatched on each display object on a stage whenever the stage updates. This occurs immediately before the
 	 * rendering (draw) pass. When {{#crossLink "Stage/update"}}{{/crossLink}} is called, first all display objects on
 	 * the stage dispatch the tick event, then all of the display objects are drawn to stage. Children will have their
-	 * tick event dispatched in order of their depth prior to the event being dispatched on their parent.
+	 * {{#crossLink "tick:event"}}{{/crossLink}} event dispatched in order of their depth prior to the event being
+	 * dispatched on their parent.
 	 * @event tick
 	 * @param {Object} target The object that dispatched the event.
 	 * @param {String} type The event type.
@@ -235,11 +313,12 @@ var p = DisplayObject.prototype;
 	p.alpha = 1;
 
 	/**
-	 * If a cache is active, this returns the canvas that holds the cached version of this display object. See cache()
-	 * for more information. READ-ONLY.
+	 * If a cache is active, this returns the canvas that holds the cached version of this display object. See {{#crossLink "cache"}}{{/crossLink}}
+	 * for more information.
 	 * @property cacheCanvas
 	 * @type {HTMLCanvasElement | Object}
 	 * @default null
+	 * @readonly
 	 **/
 	p.cacheCanvas = null;
 
@@ -254,16 +333,31 @@ var p = DisplayObject.prototype;
 	/**
 	 * Indicates whether to include this object when running mouse interactions. Setting this to `false` for children
 	 * of a {{#crossLink "Container"}}{{/crossLink}} will cause events on the Container to not fire when that child is
-	 * clicked. Note that setting this property to `false` does not prevent the {{#crossLink "Container/getObjectsUnderPoint"}}{{/crossLink}}
+	 * clicked. Setting this property to `false` does not prevent the {{#crossLink "Container/getObjectsUnderPoint"}}{{/crossLink}}
 	 * method from returning the child.
+	 *
+	 * <strong>Note:</strong> In EaselJS 0.7.0, the mouseEnabled property will not work properly with nested Containers. Please
+	 * check out the latest NEXT version in <a href="https://github.com/CreateJS/EaselJS/tree/master/lib">GitHub</a> for an updated version with this issue resolved. The fix will be
+	 * provided in the next release of EaselJS.
 	 * @property mouseEnabled
 	 * @type {Boolean}
 	 * @default true
 	 **/
 	p.mouseEnabled = true;
+	
+	/**
+	 * If false, the tick will not run on this display object (or its children). This can provide some performance benefits.
+	 * In addition to preventing the "tick" event from being dispatched, it will also prevent tick related updates
+	 * on some display objects (ex. Sprite & MovieClip frame advancing, DOMElement visibility handling).
+	 * @property tickEnabled
+	 * @type Boolean
+	 * @default true
+	 **/
+	p.tickEnabled = true;
 
 	/**
-	 * An optional name for this display object. Included in toString(). Useful for debugging.
+	 * An optional name for this display object. Included in {{#crossLink "DisplayObject/toString"}}{{/crossLink}} . Useful for
+	 * debugging.
 	 * @property name
 	 * @type {String}
 	 * @default null
@@ -271,18 +365,20 @@ var p = DisplayObject.prototype;
 	p.name = null;
 
 	/**
-	 * A reference to the Container or Stage object that contains this display object, or null if it has not been added
-	 * to one. READ-ONLY.
+	 * A reference to the {{#crossLink "Container"}}{{/crossLink}} or {{#crossLink "Stage"}}{{/crossLink}} object that
+	 * contains this display object, or null if it has not been added
+	 * to one.
 	 * @property parent
 	 * @final
 	 * @type {Container}
 	 * @default null
+	 * @readonly
 	 **/
 	p.parent = null;
 
 	/**
-	 * The x offset for this display object's registration point. For example, to make a 100x100px Bitmap rotate around
-	 * it's center, you would set regX and regY to 50.
+	 * The left offset for this display object's registration point. For example, to make a 100x100px Bitmap rotate
+	 * around its center, you would set regX and {{#crossLink "DisplayObject/regY:property"}}{{/crossLink}} to 50.
 	 * @property regX
 	 * @type {Number}
 	 * @default 0
@@ -291,7 +387,7 @@ var p = DisplayObject.prototype;
 
 	/**
 	 * The y offset for this display object's registration point. For example, to make a 100x100px Bitmap rotate around
-	 * it's center, you would set regX and regY to 50.
+	 * its center, you would set {{#crossLink "DisplayObject/regX:property"}}{{/crossLink}} and regY to 50.
 	 * @property regY
 	 * @type {Number}
 	 * @default 0
@@ -308,7 +404,7 @@ var p = DisplayObject.prototype;
 
 	/**
 	 * The factor to stretch this display object horizontally. For example, setting scaleX to 2 will stretch the display
-	 * object to twice it's nominal width. To horizontally flip an object, set the scale to a negative number.
+	 * object to twice its nominal width. To horizontally flip an object, set the scale to a negative number.
 	 * @property scaleX
 	 * @type {Number}
 	 * @default 1
@@ -317,7 +413,7 @@ var p = DisplayObject.prototype;
 
 	/**
 	 * The factor to stretch this display object vertically. For example, setting scaleY to 0.5 will stretch the display
-	 * object to half it's nominal height. To vertically flip an object, set the scale to a negative number.
+	 * object to half its nominal height. To vertically flip an object, set the scale to a negative number.
 	 * @property scaleY
 	 * @type {Number}
 	 * @default 1
@@ -341,7 +437,7 @@ var p = DisplayObject.prototype;
 	p.skewY = 0;
 
 	/**
-	 * A shadow object that defines the shadow to render on this display object. Set to null to remove a shadow. If
+	 * A shadow object that defines the shadow to render on this display object. Set to `null` to remove a shadow. If
 	 * null, this property is inherited from the parent container.
 	 * @property shadow
 	 * @type {Shadow}
@@ -350,8 +446,8 @@ var p = DisplayObject.prototype;
 	p.shadow = null;
 
 	/**
-	 * Indicates whether this display object should be rendered to the canvas and included when running
-	 * Stage.getObjectsUnderPoint().
+	 * Indicates whether this display object should be rendered to the canvas and included when running the Stage
+	 * {{#crossLink "Stage/getObjectsUnderPoint"}}{{/crossLink}} method.
 	 * @property visible
 	 * @type {Boolean}
 	 * @default true
@@ -375,7 +471,7 @@ var p = DisplayObject.prototype;
 
 	/**
 	 * The composite operation indicates how the pixels of this display object will be composited with the elements
-	 * behind it. If null, this property is inherited from the parent container. For more information, read the
+	 * behind it. If `null`, this property is inherited from the parent container. For more information, read the
 	 * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#compositing">
 	 * whatwg spec on compositing</a>.
 	 * @property compositeOperation
@@ -385,87 +481,63 @@ var p = DisplayObject.prototype;
 	p.compositeOperation = null;
 
 	/**
-	 * Indicates whether the display object should have it's x & y position rounded prior to drawing it to stage.
-	 * Snapping to whole pixels can result in a sharper and faster draw for images (ex. Bitmap & cached objects).
-	 * This only applies if the enclosing stage has snapPixelsEnabled set to true. The snapToPixel property is true
-	 * by default for Bitmap and BitmapAnimation instances, and false for all other display objects.
-	 * <br/><br/>
-	 * Note that this applies only rounds the display object's local position. You should
-	 * ensure that all of the display object's ancestors (parent containers) are also on a whole pixel. You can do this
-	 * by setting the ancestors' snapToPixel property to true.
+	 * Indicates whether the display object should be drawn to a whole pixel when
+	 * {{#crossLink "Stage/snapToPixelEnabled"}}{{/crossLink}} is true. To enable/disable snapping on whole
+	 * categories of display objects, set this value on the prototype (Ex. Text.prototype.snapToPixel = true).
 	 * @property snapToPixel
 	 * @type {Boolean}
-	 * @default false
-	 * @deprecated Hardware acceleration in modern browsers makes this unnecessary.
+	 * @default true
 	 **/
-	p.snapToPixel = false;
-	 
+	p.snapToPixel = true;
+	
+	// TODO: remove handler docs in future:
 	/**
-	 * The onPress callback is called when the user presses down on their mouse over this display object. The handler
-	 * is passed a single param containing the corresponding MouseEvent instance. You can subscribe to the onMouseMove
-	 * and onMouseUp callbacks of the event object to receive these events until the user releases the mouse button.
-	 * If an onPress handler is set on a container, it will receive the event if any of its children are clicked.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/mousedown:event"}}{{/crossLink}}
+	 * event.
 	 * @property onPress
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "mousedown" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "mousedown" event.
 	 */
-	p.onPress = null;	 
-	 
 	/**
-	 * The onClick callback is called when the user presses down on and then releases the mouse button over this
-	 * display object. The handler is passed a single param containing the corresponding MouseEvent instance. If an
-	 * onClick handler is set on a container, it will receive the event if any of its children are clicked.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/click:event"}}{{/crossLink}}
+	 * event.
 	 * @property onClick
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "click" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "click" event.
 	 */
-	p.onClick = null;
-
 	/**
-	 * The onDoubleClick callback is called when the user double clicks over this display object. The handler is
-	 * passed a single param containing the corresponding MouseEvent instance. If an onDoubleClick handler is set
-	 * on a container, it will receive the event if any of its children are clicked.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/dblclick:event"}}{{/crossLink}}
+	 * event.
 	 * @property onDoubleClick
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "dblClick" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "dblclick" event.
 	 */
-	p.onDoubleClick = null;
-
 	/**
-	 * The onMouseOver callback is called when the user rolls over the display object. You must enable this event using
-	 * stage.enableMouseOver(). The handler is passed a single param containing the corresponding MouseEvent instance.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/mouseover:event"}}{{/crossLink}}
+	 * event.
 	 * @property onMouseOver
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "mouseover" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "mouseover" event.
 	 */
-	p.onMouseOver = null;
-
 	/**
-	 * The onMouseOut callback is called when the user rolls off of the display object. You must enable this event using
-	 * stage.enableMouseOver(). The handler is passed a single param containing the corresponding MouseEvent instance.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/mouseout:event"}}{{/crossLink}}
+	 * event.
 	 * @property onMouseOut
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "mouseout" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "mouseout" event.
 	 */
-	p.onMouseOut = null;
-	 
 	/**
-	 * The onTick callback is called on each display object on a stage whenever the stage updates.
-	 * This occurs immediately before the rendering (draw) pass. When stage.update() is called, first all display
-	 * objects on the stage have onTick called, then all of the display objects are drawn to stage. Children will have
-	 * their `onTick` called in order of their depth prior to onTick being called on their parent.
-	 *
-	 * Any parameters passed in to `stage.update()` are passed on to the `onTick()` handlers. For example, if you call
-	 * `stage.update("hello")`, all of the display objects with a handler will have `onTick("hello")` called.
+	 * REMOVED. Use {{#crossLink "EventDispatcher/addEventListener"}}{{/crossLink}} and the {{#crossLink "DisplayObject/tick:event"}}{{/crossLink}}
+	 * event.
 	 * @property onTick
 	 * @type {Function}
-	 * @deprecated In favour of addEventListener and the "tick" event. Will be removed in a future version.
+	 * @deprecated Use addEventListener and the "tick" event.
 	 */
-	p.onTick = null;
 
 	/**
-	 * An array of Filter objects to apply to this display object. Filters are only applied / updated when `cache()` or
-	 * `updateCache()` is called on the display object, and only apply to the area that is cached.
+	 * An array of Filter objects to apply to this display object. Filters are only applied / updated when {{#crossLink "cache"}}{{/crossLink}}
+	 * or {{#crossLink "updateCache"}}{{/crossLink}} is called on the display object, and only apply to the area that is
+	 * cached.
 	 * @property filters
 	 * @type {Array}
 	 * @default null
@@ -473,7 +545,8 @@ var p = DisplayObject.prototype;
 	p.filters = null;
 
 	/**
-	 * Returns an ID number that uniquely identifies the current cache for this display object. This can be used to * determine if the cache has changed since a previous check.
+	 * Returns an ID number that uniquely identifies the current cache for this display object. This can be used to
+	 * determine if the cache has changed since a previous check.
 	 * @property cacheID
 	 * @type {Number}
 	 * @default 0
@@ -495,6 +568,9 @@ var p = DisplayObject.prototype;
 	 * the hit test object were a child of this display object and relative to its regX/Y). The hitArea will be tested
 	 * using only its own `alpha` value regardless of the alpha value on the target display object, or the target's
 	 * ancestors (parents).
+	 * 
+	 * If set on a {{#crossLink "Container"}}{{/crossLink}}, children of the Container will not receive mouse events.
+	 * This is similar to setting {{#crossLink "mouseChildren"}}{{/crossLink}} to false.
 	 *
 	 * Note that hitArea is NOT currently used by the `hitTest()` method, nor is it supported for {{#crossLink "Stage"}}{{/crossLink}}.
 	 * @property hitArea
@@ -515,24 +591,12 @@ var p = DisplayObject.prototype;
 	/**
 	 * A CSS cursor (ex. "pointer", "help", "text", etc) that will be displayed when the user hovers over this display
 	 * object. You must enable mouseover events using the {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}} method to
-	 * use this property. If null it will use the default cursor.
+	 * use this property. Setting a non-null cursor on a Container will override the cursor set on its descendants.
 	 * @property cursor
 	 * @type {String}
 	 * @default null
 	 */
 	p.cursor = null;
-	
-	
-// mix-ins:
-	// EventDispatcher methods:
-	p.addEventListener = null;
-	p.removeEventListener = null;
-	p.removeAllEventListeners = null;
-	p.dispatchEvent = null;
-	p.hasEventListener = null;
-	p._listeners = null;
-	createjs.EventDispatcher.initialize(p); // inject EventDispatcher methods.
-	
 
 // private properties:
 
@@ -583,6 +647,22 @@ var p = DisplayObject.prototype;
 	 * @default null
 	 **/
 	p._matrix = null;
+
+	/**
+	 * @property _rectangle
+	 * @protected
+	 * @type {Rectangle}
+	 * @default null
+	 **/
+	p._rectangle = null;
+
+	/**
+	 * @property _bounds
+	 * @protected
+	 * @type {Rectangle}
+	 * @default null
+	 **/
+	p._bounds = null;
 	
 
 // constructor:
@@ -596,7 +676,8 @@ var p = DisplayObject.prototype;
 	p.initialize = function() {
 		this.id = createjs.UID.get();
 		this._matrix = new createjs.Matrix2D();
-	}
+		this._rectangle = new createjs.Rectangle();
+	};
 
 // public methods:
 	/**
@@ -609,10 +690,10 @@ var p = DisplayObject.prototype;
 	 **/
 	p.isVisible = function() {
 		return !!(this.visible && this.alpha > 0 && this.scaleX != 0 && this.scaleY != 0);
-	}
+	};
 
 	/**
-	 * Draws the display object into the specified context ignoring it's visible, alpha, shadow, and transform.
+	 * Draws the display object into the specified context ignoring its visible, alpha, shadow, and transform.
 	 * Returns <code>true</code> if the draw was handled (useful for overriding functionality).
 	 *
 	 * NOTE: This method is mainly for internal use, though it may be useful for advanced uses.
@@ -620,14 +701,19 @@ var p = DisplayObject.prototype;
 	 * @param {CanvasRenderingContext2D} ctx The canvas 2D context object to draw into.
 	 * @param {Boolean} [ignoreCache=false] Indicates whether the draw operation should ignore any current cache. For example,
 	 * used for drawing the cache (to prevent it from simply drawing an existing cache back into itself).
+	 * @return {Boolean}
 	 **/
 	p.draw = function(ctx, ignoreCache) {
 		var cacheCanvas = this.cacheCanvas;
 		if (ignoreCache || !cacheCanvas) { return false; }
-		var scale = this._cacheScale;
-		ctx.drawImage(cacheCanvas, this._cacheOffsetX, this._cacheOffsetY, cacheCanvas.width/scale, cacheCanvas.height/scale);
+		var scale = this._cacheScale, offX = this._cacheOffsetX, offY = this._cacheOffsetY, fBounds;
+		if (fBounds = this._applyFilterBounds(offX, offY, 0, 0)) {
+			offX = fBounds.x;
+			offY = fBounds.y;
+		}
+		ctx.drawImage(cacheCanvas, offX, offY, cacheCanvas.width/scale, cacheCanvas.height/scale);
 		return true;
-	}
+	};
 	
 	/**
 	 * Applies this display object's transformation, alpha, globalCompositeOperation, clipping path (mask), and shadow
@@ -650,19 +736,22 @@ var p = DisplayObject.prototype;
 		}
 		
 		mtx = o._matrix.identity().appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY);
-		// TODO: should be a better way to manage this setting. For now, using dynamic access to avoid circular dependencies:
-		if (createjs["Stage"]._snapToPixelEnabled && o.snapToPixel) { ctx.transform(mtx.a,  mtx.b, mtx.c, mtx.d, mtx.tx+0.5|0, mtx.ty+0.5|0); }
-		else { ctx.transform(mtx.a,  mtx.b, mtx.c, mtx.d, mtx.tx, mtx.ty); }
+		var tx = mtx.tx, ty = mtx.ty;
+		if (DisplayObject._snapToPixelEnabled && o.snapToPixel) {
+			tx = tx + (tx < 0 ? -0.5 : 0.5) | 0;
+			ty = ty + (ty < 0 ? -0.5 : 0.5) | 0;
+		}
+		ctx.transform(mtx.a,  mtx.b, mtx.c, mtx.d, tx, ty);
 		ctx.globalAlpha *= o.alpha;
 		if (o.compositeOperation) { ctx.globalCompositeOperation = o.compositeOperation; }
 		if (o.shadow) { this._applyShadow(ctx, o.shadow); }
-	}
+	};
 
 	/**
 	 * Draws the display object into a new canvas, which is then used for subsequent draws. For complex content
 	 * that does not change frequently (ex. a Container with many children that do not move, or a complex vector Shape),
 	 * this can provide for much faster rendering because the content does not need to be re-rendered each tick. The
-	 * cached display object can be moved, rotated, faded, etc freely, however if it's content changes, you must
+	 * cached display object can be moved, rotated, faded, etc freely, however if its content changes, you must
 	 * manually update the cache by calling <code>updateCache()</code> or <code>cache()</code> again. You must specify
 	 * the cache area via the x, y, w, and h parameters. This defines the rectangle that will be rendered and cached
 	 * using this display object's coordinates.
@@ -675,7 +764,10 @@ var p = DisplayObject.prototype;
 	 *      myShape.cache(-25, -25, 50, 50);
 	 *
 	 * Note that filters need to be defined <em>before</em> the cache is applied. Check out the {{#crossLink "Filter"}}{{/crossLink}}
-	 * class for more information.
+	 * class for more information. Some filters (ex. BlurFilter) will not work as expected in conjunction with the scale param.
+	 * 
+	 * Usually, the resulting cacheCanvas will have the dimensions width*scale by height*scale, however some filters (ex. BlurFilter)
+	 * will add padding to the canvas dimensions.
 	 *
 	 * @method cache
 	 * @param {Number} x The x coordinate origin for the cache region.
@@ -690,13 +782,13 @@ var p = DisplayObject.prototype;
 		// draw to canvas.
 		scale = scale||1;
 		if (!this.cacheCanvas) { this.cacheCanvas = createjs.createCanvas?createjs.createCanvas():document.createElement("canvas"); }
-		this.cacheCanvas.width = Math.ceil(width*scale);
-		this.cacheCanvas.height = Math.ceil(height*scale);
+		this._cacheWidth = width;
+		this._cacheHeight = height;
 		this._cacheOffsetX = x;
 		this._cacheOffsetY = y;
-		this._cacheScale = scale||1;
+		this._cacheScale = scale;
 		this.updateCache();
-	}
+	};
 
 	/**
 	 * Redraws the display object to its cache. Calling updateCache without an active cache will throw an error.
@@ -719,17 +811,37 @@ var p = DisplayObject.prototype;
 	 **/
 	p.updateCache = function(compositeOperation) {
 		var cacheCanvas = this.cacheCanvas, scale = this._cacheScale, offX = this._cacheOffsetX*scale, offY = this._cacheOffsetY*scale;
+		var w = this._cacheWidth, h = this._cacheHeight, fBounds;
 		if (!cacheCanvas) { throw "cache() must be called before updateCache()"; }
 		var ctx = cacheCanvas.getContext("2d");
+		
+		// update bounds based on filters:
+		if (fBounds = this._applyFilterBounds(offX, offY, w, h)) {
+			offX = fBounds.x;
+			offY = fBounds.y;
+			w = fBounds.width;
+			h = fBounds.height;
+		}
+		
+		w = Math.ceil(w*scale);
+		h = Math.ceil(h*scale);
+		if (w != cacheCanvas.width || h != cacheCanvas.height) {
+			// TODO: it would be nice to preserve the content if there is a compositeOperation.
+			cacheCanvas.width = w;
+			cacheCanvas.height = h;
+		} else if (!compositeOperation) {
+			ctx.clearRect(0, 0, w+1, h+1);
+		}
+		
 		ctx.save();
-		if (!compositeOperation) { ctx.clearRect(0, 0, cacheCanvas.width+1, cacheCanvas.height+1); }
 		ctx.globalCompositeOperation = compositeOperation;
 		ctx.setTransform(scale, 0, 0, scale, -offX, -offY);
 		this.draw(ctx, true);
+		// TODO: filters and cache scale don't play well together at present.
 		this._applyFilters();
 		ctx.restore();
 		this.cacheID = DisplayObject._nextCacheID++;
-	}
+	};
 
 	/**
 	 * Clears the current cache. See {{#crossLink "DisplayObject/cache"}}{{/crossLink}} for more information.
@@ -739,18 +851,19 @@ var p = DisplayObject.prototype;
 		this._cacheDataURL = this.cacheCanvas = null;
 		this.cacheID = this._cacheOffsetX = this._cacheOffsetY = 0;
 		this._cacheScale = 1;
-	}
+	};
 	
 	/**
-	* Returns a data URL for the cache, or null if this display object is not cached.
-	* Uses cacheID to ensure a new data URL is not generated if the cache has not changed.
-	* @method getCacheDataURL.
-	**/
+	 * Returns a data URL for the cache, or null if this display object is not cached.
+	 * Uses cacheID to ensure a new data URL is not generated if the cache has not changed.
+	 * @method getCacheDataURL
+	 * @return {String} The image data url for the cache.
+	 **/
 	p.getCacheDataURL = function() {
 		if (!this.cacheCanvas) { return null; }
 		if (this.cacheID != this._cacheDataURLID) { this._cacheDataURL = this.cacheCanvas.toDataURL(); }
 		return this._cacheDataURL;
-	}
+	};
 
 	/**
 	 * Returns the stage that this display object will be rendered on, or null if it has not been added to one.
@@ -766,7 +879,7 @@ var p = DisplayObject.prototype;
 		// using dynamic access to avoid circular dependencies;
 		if (o instanceof createjs["Stage"]) { return o; }
 		return null;
-	}
+	};
 
 	/**
 	 * Transforms the specified x and y position from the coordinate space of the display object
@@ -800,7 +913,7 @@ var p = DisplayObject.prototype;
 			return outPoint;
 		}
 		return new createjs.Point(mtx.tx, mtx.ty);
-	}
+	};
 
 	/**
 	 * Transforms the specified x and y position from the global (stage) coordinate space to the
@@ -835,7 +948,7 @@ var p = DisplayObject.prototype;
 			return outPoint;
 		}
 		return new createjs.Point(mtx.tx, mtx.ty);
-	}
+	};
 
 	/**
 	 * Transforms the specified x and y position from the coordinate space of this display object to the coordinate
@@ -848,7 +961,7 @@ var p = DisplayObject.prototype;
 	 *
 	 * @method localToLocal
 	 * @param {Number} x The x position in the source display object to transform.
-	 * @param {Number} y The y position on the stage to transform.
+	 * @param {Number} y The y position on the source display object to transform.
 	 * @param {DisplayObject} target The target display object to which the coordinates will be transformed.
 	 * @param {Point} outPoint=null A point to use as the output instead of creating a new one.
 	 * @return {Point} Returns a Point instance with x and y properties correlating to the transformed position
@@ -857,7 +970,7 @@ var p = DisplayObject.prototype;
 	p.localToLocal = function(x, y, target, outPoint) {
 		var pt = this.localToGlobal(x, y, outPoint);
 		return target.globalToLocal(pt.x, pt.y, pt);
-	}
+	};
 
 	/**
 	 * Shortcut method to quickly set the transform properties on the display object. All parameters are optional.
@@ -890,7 +1003,7 @@ var p = DisplayObject.prototype;
 		this.regX = regX || 0;
 		this.regY = regY || 0;
 		return this;
-	}
+	};
 	
 	/**
 	 * Returns a matrix based on this object's transform.
@@ -902,7 +1015,7 @@ var p = DisplayObject.prototype;
 	p.getMatrix = function(matrix) {
 		var o = this;
 		return (matrix ? matrix.identity() : new createjs.Matrix2D()).appendTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).appendProperties(o.alpha, o.shadow, o.compositeOperation);
-	}
+	};
 	
 	/**
 	 * Generates a concatenated Matrix2D object representing the combined transform of the display object and all of its
@@ -910,7 +1023,7 @@ var p = DisplayObject.prototype;
 	 * be used to transform positions between coordinate spaces, such as with {{#crossLink "DisplayObject/localToGlobal"}}{{/crossLink}}
 	 * and {{#crossLink "DisplayObject/globalToLocal"}}{{/crossLink}}.
 	 * @method getConcatenatedMatrix
-	 * @param {Matrix2D} [mtx] A {{#crossLink "Matrix2D"}}{{/crossLink}} object to populate with the calculated values.
+	 * @param {Matrix2D} [matrix] A {{#crossLink "Matrix2D"}}{{/crossLink}} object to populate with the calculated values.
 	 * If null, a new Matrix2D object is returned.
 	 * @return {Matrix2D} a concatenated Matrix2D object representing the combined transform of the display object and
 	 * all of its parent Containers up to the highest level ancestor (usually the {{#crossLink "Stage"}}{{/crossLink}}).
@@ -920,16 +1033,15 @@ var p = DisplayObject.prototype;
 		else { matrix = new createjs.Matrix2D(); }
 		var o = this;
 		while (o != null) {
-			matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha, o.shadow, o.compositeOperation);
+			matrix.prependTransform(o.x, o.y, o.scaleX, o.scaleY, o.rotation, o.skewX, o.skewY, o.regX, o.regY).prependProperties(o.alpha, o.shadow, o.compositeOperation, o.visible);
 			o = o.parent;
 		}
 		return matrix;
-	}
+	};
 
 	/**
-	 * Tests whether the display object intersects the specified local point (ie. draws a pixel with alpha > 0 at
-	 * the specified position). This ignores the alpha, shadow and compositeOperation of the display object, and all
-	 * transform properties including regX/Y.
+	 * Tests whether the display object intersects the specified point in local coordinates (ie. draws a pixel with alpha > 0 at
+	 * the specified position). This ignores the alpha, shadow, hitArea, mask, and compositeOperation of the display object.
 	 *
 	 * <h4>Example</h4>
 	 *
@@ -946,6 +1058,7 @@ var p = DisplayObject.prototype;
 	 * local Point.
 	*/
 	p.hitTest = function(x, y) {
+		// TODO: update with support for .hitArea & .mask and update hitArea / mask docs?
 		if(this.hitRect)
 		{
 			return this.hitRect.contains(x, y);
@@ -964,7 +1077,7 @@ var p = DisplayObject.prototype;
 	};
 	
 	/**
-	 * Provides a chainable shortcut method for setting a number of properties on a DisplayObject instance.
+	 * Provides a chainable shortcut method for setting a number of properties on the instance.
 	 *
 	 * <h4>Example</h4>
 	 *
@@ -974,16 +1087,119 @@ var p = DisplayObject.prototype;
 	 *
 	 * @method set
 	 * @param {Object} props A generic object containing properties to copy to the DisplayObject instance.
-	 * @return {DisplayObject} Returns The DisplayObject instance the method is called on (useful for chaining calls.)
+	 * @return {DisplayObject} Returns the instance the method is called on (useful for chaining calls.)
 	*/
 	p.set = function(props) {
 		for (var n in props) { this[n] = props[n]; }
 		return this;
-	}
+	};
+	
+	/**
+	 * Returns a rectangle representing this object's bounds in its local coordinate system (ie. with no transformation).
+	 * Objects that have been cached will return the bounds of the cache.
+	 * 
+	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use 
+	 * {{#crossLink "DisplayObject/setBounds"}}{{/crossLink}} so that they are included when calculating Container
+	 * bounds.
+	 * 
+	 * <table>
+	 * 	<tr><td><b>All</b></td><td>
+	 * 		All display objects support setting bounds manually using setBounds(). Likewise, display objects that
+	 * 		have been cached using cache() will return the bounds of their cache. Manual and cache bounds will override
+	 * 		the automatic calculations listed below.
+	 * 	</td></tr>
+	 * 	<tr><td><b>Bitmap</b></td><td>
+	 * 		Returns the width and height of the sourceRect (if specified) or image, extending from (x=0,y=0).
+	 * 	</td></tr>
+	 * 	<tr><td><b>Sprite</b></td><td>
+	 * 		Returns the bounds of the current frame. May have non-zero x/y if a frame registration point was specified
+	 * 		in the spritesheet data. See also {{#crossLink "SpriteSheet/getFrameBounds"}}{{/crossLink}}
+	 * 	</td></tr>
+	 * 	<tr><td><b>Container</b></td><td>
+	 * 		Returns the aggregate (combined) bounds of all children that return a non-null value from getBounds().
+	 * 	</td></tr>
+	 * 	<tr><td><b>Shape</b></td><td>
+	 * 		Does not currently support automatic bounds calculations. Use setBounds() to manually define bounds.
+	 * 	</td></tr>
+	 * 	<tr><td><b>Text</b></td><td>
+	 * 		Returns approximate bounds. Horizontal values (x/width) are quite accurate, but vertical values (y/height) are
+	 * 		not, especially when using textBaseline values other than "top".
+	 * 	</td></tr>
+	 * 	<tr><td><b>BitmapText</b></td><td>
+	 * 		Returns approximate bounds. Values will be more accurate if spritesheet frame registration points are close
+	 * 		to (x=0,y=0).
+	 * 	</td></tr>
+	* </table>
+	 * 
+	 * Bounds can be expensive to calculate for some objects (ex. text, or containers with many children), and
+	 * are recalculated each time you call getBounds(). You can prevent recalculation on static objects by setting the
+	 * bounds explicitly:
+	 * 
+	 * 	var bounds = obj.getBounds();
+	 * 	obj.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+	 * 	// getBounds will now use the set values, instead of recalculating
+	 * 
+	 * To reduce memory impact, the returned Rectangle instance may be reused internally; clone the instance or copy its
+	 * values if you need to retain it.
+	 * 
+	 * 	var myBounds = obj.getBounds().clone();
+	 * 	// OR:
+	 * 	myRect.copy(obj.getBounds());
+	 * 
+	 * @method getBounds
+	 * @return {Rectangle} A Rectangle instance representing the bounds, or null if bounds are not available for this
+	 * object.
+	 **/
+	p.getBounds = function() {
+		if (this._bounds) { return this._rectangle.copy(this._bounds); }
+		var cacheCanvas = this.cacheCanvas;
+		if (cacheCanvas) {
+			var scale = this._cacheScale;
+			return this._rectangle.initialize(this._cacheOffsetX, this._cacheOffsetY, cacheCanvas.width/scale, cacheCanvas.height/scale);
+		}
+		return null;
+	};
+	
+	/**
+	 * Returns a rectangle representing this object's bounds in its parent's coordinate system (ie. with transformations applied).
+	 * Objects that have been cached will return the transformed bounds of the cache.
+	 * 
+	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use 
+	 * {{#crossLink "DisplayObject/setBounds"}}{{/crossLink}} so that they are included when calculating Container
+	 * bounds.
+	 * 
+	 * To reduce memory impact, the returned Rectangle instance may be reused internally; clone the instance or copy its
+	 * values if you need to retain it.
+	 * 
+	 * Container instances calculate aggregate bounds for all children that return bounds via getBounds.
+	 * @method getTransformedBounds
+	 * @return {Rectangle} A Rectangle instance representing the bounds, or null if bounds are not available for this object.
+	 **/
+	p.getTransformedBounds = function() {
+		return this._getBounds();
+	};
+	
+	/**
+	 * Allows you to manually specify the bounds of an object that either cannot calculate their own bounds (ex. Shape &
+	 * Text) for future reference, or so the object can be included in Container bounds. Manually set bounds will always
+	 * override calculated bounds.
+	 * 
+	 * The bounds should be specified in the object's local (untransformed) coordinates. For example, a Shape instance
+	 * with a 25px radius circle centered at 0,0 would have bounds of (-25, -25, 50, 50).
+	 * @method setBounds
+	 * @param {Number} x The x origin of the bounds. Pass null to remove the manual bounds.
+	 * @param {Number} y The y origin of the bounds.
+	 * @param {Number} width The width of the bounds.
+	 * @param {Number} height The height of the bounds.
+	 **/
+	p.setBounds = function(x, y, width, height) {
+		if (x == null) { this._bounds = x; }
+		this._bounds = (this._bounds || new createjs.Rectangle()).initialize(x, y, width, height);
+	};
 
 	/**
 	 * Returns a clone of this DisplayObject. Some properties that are specific to this instance's current context are
-	 * reverted to their defaults (for example .parent).
+	 * reverted to their defaults (for example .parent). Also note that caches are not maintained across clones.
 	 * @method clone
 	 * @return {DisplayObject} A clone of the current DisplayObject instance.
 	 **/
@@ -991,7 +1207,7 @@ var p = DisplayObject.prototype;
 		var o = new DisplayObject();
 		this.cloneProps(o);
 		return o;
-	}
+	};
 
 	/**
 	 * Returns a string representation of this object.
@@ -1000,7 +1216,7 @@ var p = DisplayObject.prototype;
 	 **/
 	p.toString = function() {
 		return "[DisplayObject (name="+  this.name +")]";
-	}
+	};
 
 // private methods:
 
@@ -1025,13 +1241,10 @@ var p = DisplayObject.prototype;
 		o.visible = this.visible;
 		o.x  = this.x;
 		o.y = this.y;
+		o._bounds = this._bounds;
 		o.mouseEnabled = this.mouseEnabled;
 		o.compositeOperation = this.compositeOperation;
-		if (this.cacheCanvas) {
-			o.cacheCanvas = this.cacheCanvas.cloneNode(true);
-			o.cacheCanvas.getContext("2d").putImageData(this.cacheCanvas.getContext("2d").getImageData(0,0,this.cacheCanvas.width,this.cacheCanvas.height),0,0);
-		}
-	}
+	};
 
 	/**
 	 * @method _applyShadow
@@ -1045,20 +1258,24 @@ var p = DisplayObject.prototype;
 		ctx.shadowOffsetX = shadow.offsetX;
 		ctx.shadowOffsetY = shadow.offsetY;
 		ctx.shadowBlur = shadow.blur;
-	}
+	};
 	
 	
 	/**
 	 * @method _tick
+	 * @param {Object} props Props to copy to the tick event object. This will usually include the
+	 * properties from the {{#crossLink "Ticker"}}{{/crossLink}} "tick" event, such as `delta` and `paused`, but may
+	 * be undefined or contain other values depending on the usage by the application.
 	 * @protected
 	 **/
-	p._tick = function(params) {
-		this.onTick&&this.onTick.apply(this, params);
-		// because onTick can be really performance sensitive, we'll inline some of the dispatchEvent work.
-		// this can probably go away at some point. It only has a noticeable impact with thousands of objects in modern browsers.
+	p._tick = function(props) {
+		// because tick can be really performance sensitive, we'll inline some of the dispatchEvent work.
 		var ls = this._listeners;
-		if (ls&&ls["tick"]) { this.dispatchEvent({type:"tick",params:params}); }
-	}
+		if (ls && ls["tick"]) {
+			var evt = new createjs.Event("tick").set(props);
+			this._dispatchEvent(evt, this, 2);
+		}
+	};
 
 	/**
 	 * @method _testHit
@@ -1075,7 +1292,7 @@ var p = DisplayObject.prototype;
 			}
 		}
 		return hit;
-	}
+	};
 
 	/**
 	 * @method _applyFilters
@@ -1093,24 +1310,88 @@ var p = DisplayObject.prototype;
 	};
 	
 	/**
-	 * Indicates whether the display object has a listener of the corresponding event types.
-	 * @method _hasMouseHandler
-	 * @param {Number} typeMask A bitmask indicating which event types to look for. Bit 1 specifies press &
-	 * click & double click, bit 2 specifies it should look for mouse over and mouse out. This implementation may change.
+	 * @method _applyFilterBounds
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} width
+	 * @param {Number} height
+	 * @return {Rectangle}
+	 * @protected
+	 **/
+	p._applyFilterBounds = function(x, y, width, height) {
+		var bounds, l, filters = this.filters;
+		if (!filters || !(l=filters.length)) { return null; }
+		
+		for (var i=0; i<l; i++) {
+			var f = this.filters[i];
+			var fBounds = f.getBounds&&f.getBounds();
+			if (!fBounds) { continue; }
+			if (!bounds) { bounds = this._rectangle.initialize(x,y,width,height); }
+			bounds.x += fBounds.x;
+			bounds.y += fBounds.y;
+			bounds.width += fBounds.width;
+			bounds.height += fBounds.height;
+		}
+		return bounds;
+	};
+	
+	/**
+	 * @method _getBounds
+	 * @param {Matrix2D} matrix
+	 * @param {Boolean} ignoreTransform If true, does not apply this object's transform.
+	 * @return {Rectangle}
+	 * @protected
+	 **/
+	p._getBounds = function(matrix, ignoreTransform){
+		return this._transformBounds(this.getBounds(), matrix, ignoreTransform);
+	};
+	
+	/**
+	 * @method _transformBounds
+	 * @param {Rectangle} bounds
+	 * @param {Matrix2D} matrix
+	 * @param {Boolean} ignoreTransform
+	 * @return {Rectangle}
+	 * @protected
+	 **/
+	p._transformBounds = function(bounds, matrix, ignoreTransform) {
+		if (!bounds) { return bounds; }
+		var x = bounds.x, y = bounds.y, width = bounds.width, height = bounds.height;
+		var mtx = ignoreTransform ? this._matrix.identity() : this.getMatrix(this._matrix);
+		
+		if (x || y) { mtx.appendTransform(0,0,1,1,0,0,0,-x,-y); }
+		if (matrix) { mtx.prependMatrix(matrix); }
+		
+		var x_a = width*mtx.a, x_b = width*mtx.b;
+		var y_c = height*mtx.c, y_d = height*mtx.d;
+		var tx = mtx.tx, ty = mtx.ty;
+		
+		var minX = tx, maxX = tx, minY = ty, maxY = ty;
+
+		if ((x = x_a + tx) < minX) { minX = x; } else if (x > maxX) { maxX = x; }
+		if ((x = x_a + y_c + tx) < minX) { minX = x; } else if (x > maxX) { maxX = x; }
+		if ((x = y_c + tx) < minX) { minX = x; } else if (x > maxX) { maxX = x; }
+		
+		if ((y = x_b + ty) < minY) { minY = y; } else if (y > maxY) { maxY = y; }
+		if ((y = x_b + y_d + ty) < minY) { minY = y; } else if (y > maxY) { maxY = y; }
+		if ((y = y_d + ty) < minY) { minY = y; } else if (y > maxY) { maxY = y; }
+		
+		return bounds.initialize(minX, minY, maxX-minX, maxY-minY);
+	};
+	
+	/**
+	 * Indicates whether the display object has any mouse event listeners or a cursor.
+	 * @method _isMouseOpaque
 	 * @return {Boolean}
 	 * @protected
 	 **/
-	p._hasMouseHandler = function(typeMask) {
-		var ls = this._listeners;
-		return !!(
-				 (typeMask&1 && (this.onPress || this.onClick || this.onDoubleClick || 
-				 (ls && (this.hasEventListener("mousedown") || this.hasEventListener("click") || this.hasEventListener("dblclick")))))
-				 ||
-				 (typeMask&2 && (this.onMouseOver || this.onMouseOut || this.cursor ||
-				 (ls && (this.hasEventListener("mouseover") || this.hasEventListener("mouseout")))))
-				 );
+	p._hasMouseEventListener = function() {
+		var evts = DisplayObject._MOUSE_EVENTS;
+		for (var i= 0, l=evts.length; i<l; i++) {
+			if (this.hasEventListener(evts[i])) { return true; }
+		}
+		return !!this.cursor;
 	};
-	 
 
 createjs.DisplayObject = DisplayObject;
 }());

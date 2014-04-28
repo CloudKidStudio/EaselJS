@@ -25,18 +25,16 @@ EaselJS is a library to make working with the Canvas element easier. It provides
 		"images": ["./assets/runningGrant.png"]
 	});
 	
-	ss.getAnimation("run").frequency = 2;
+	ss.getAnimation("run").speed = 2;
 	ss.getAnimation("run").next = "jump";
 	ss.getAnimation("jump").next = "run";
 	
-	var bitmapAnimation = new createjs.BitmapAnimation(ss);
-	bitmapAnimation.scaleY = bitmapAnimation.scaleX = .4;
-	
-	bitmapAnimation.gotoAndPlay("run");
+	var sprite = new createjs.Sprite(ss, "run");
+	sprite.scaleY = sprite.scaleX = 0.4;
 	
 	createjs.Ticker.setFPS(60);
-	createjs.Ticker.addListener(stage);
-	stage.addChild(bitmapAnimation);
+	createjs.Ticker.addEventListener("tick", stage);
+	stage.addChild(sprite);
 
 
 ## Support and Resources
@@ -66,8 +64,8 @@ A nestable display container, which lets you aggregate display objects and manip
 **Bitmap**
 Draws an image, video or canvas to the canvas according to its display properties.
 
-**BitmapAnimation**
-Displays animated or dynamic sprite sheets (images with multiple frames on a grid), and provides APIs for managing playback and sequencing.
+**Sprite**
+Displays single frames or animations from sprite sheets, and provides APIs for managing playback and sequencing.
 
 **Shape**
 Renders a Graphics object within the context of the display list.
@@ -82,7 +80,7 @@ Renders a single line of text to the stage.
 An experimental display object that allows you to manage an HTML element as a part of the display list.
 
 **Filter**
-The base filter class that other filters (ex. BoxBlurFilter, ColorMatrixFilter, etc) extend.
+The base filter class that other filters (ex. BlurFilter, ColorMatrixFilter, etc) extend.
 
 
 There are also a few helper classes included:
@@ -97,7 +95,7 @@ Provides a pausable centralized tick manager for ticking Stage instances or othe
 Very simple class that provides global, incremental unique numeric IDs.
 
 **SpriteSheet**
-Encapsulates all the data associated with a sprite sheet to be used with BitmapAnimation.
+Encapsulates all the data associated with a sprite sheet to be used with Sprite.
 
 **SpriteSheetUtils**
 Contains utility methods for extending existing sprite sheets with flipped frames and extracting individual frames.

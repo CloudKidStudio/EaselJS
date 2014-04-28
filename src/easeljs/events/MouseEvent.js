@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,52 +26,60 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * @module EaselJS
+ */
+
 // namespace:
 this.createjs = this.createjs||{};
 
 (function() {
+	"use strict";
 
 /**
- * This is passed as the parameter to mousedown, mouseup, mousemove, stagemouseup, stagemousedown, mouseover, mouseout
- * and click events on {{#crossLink "DisplayObject"}}{{/crossLink}} instances.
+ * Passed as the parameter to all mouse/pointer/touch related events. For a listing of mouse events and their properties,
+ * see the {{#crossLink "DisplayObject"}}{{/crossLink}} and {{#crossLink "Stage"}}{{/crossLink}} event listings.
  * @class MouseEvent
- * @uses EventDispatcher
- * @constructor
  * @param {String} type The event type.
+ * @param {Boolean} bubbles Indicates whether the event will bubble through the display list.
+ * @param {Boolean} cancelable Indicates whether the default behaviour of this event can be cancelled.
  * @param {Number} stageX The normalized x position relative to the stage.
  * @param {Number} stageY The normalized y position relative to the stage.
- * @param {DisplayObject} target The display object this event relates to. Note that this will be overwritten when the event is dispatched via EventDispatcher.
  * @param {MouseEvent} nativeEvent The native DOM event related to this mouse event.
  * @param {Number} pointerID The unique id for the pointer.
  * @param {Boolean} primary Indicates whether this is the primary pointer in a multitouch environment.
  * @param {Number} rawX The raw x position relative to the stage.
  * @param {Number} rawY The raw y position relative to the stage.
+ * @extends Event
+ * @constructor
  **/
-var MouseEvent = function(type, stageX, stageY, target, nativeEvent, pointerID, primary, rawX, rawY) {
-  this.initialize(type, stageX, stageY, target, nativeEvent, pointerID, primary, rawX, rawY);
-}
-var p = MouseEvent.prototype;
+var MouseEvent = function(type, bubbles, cancelable, stageX, stageY, nativeEvent, pointerID, primary, rawX, rawY) {
+	this.initialize(type, bubbles, cancelable, stageX, stageY, nativeEvent, pointerID, primary, rawX, rawY);
+};
+var p = MouseEvent.prototype = new createjs.Event();
 
 // events:
-
+	// TODO: deprecated.
 	/**
-	 * For MouseEvent objects of type "mousedown", mousemove events will be dispatched from the event object until the user
-	 * releases the mouse anywhere.
-	 * This enables you to listen to mouse move interactions for the duration of a press, which can be very useful for
-	 * operations such as drag and drop.
-	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
+	 * REMOVED. For MouseEvent objects of type "mousedown", mousemove events will be dispatched from the event object until the
+	 * user releases the mouse anywhere. This enables you to listen to mouse move interactions for the duration of a
+	 * press, which can be very useful for operations such as drag and drop.
+	 *
+	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class description for more information on mouse events.
 	 * @event mousemove
 	 * @since 0.6.0
+	 * @deprecated In favour of the DisplayObject "pressmove" event.
 	 */
 
 	/**
-	 * For MouseEvent objects of type "mousedown", a mouseup event will be dispatched from the event object when the user
-	 * releases the mouse anywhere.
-	 * This enables you to listen for a corresponding mouse up from a specific press, which can be very useful for
-	 * operations such as drag and drop.
-	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
+	 * REMOVED. For MouseEvent objects of type "mousedown", a mouseup event will be dispatched from the event object when the
+	 * user releases the mouse anywhere. This enables you to listen for a corresponding mouse up from a specific press,
+	 * which can be very useful for operations such as drag and drop.
+	 *
+	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class description for more information on mouse events.
 	 * @event mouseup
 	 * @since 0.6.0
+	 * @deprecated In favour of the DisplayObject "pressup" event.
 	 */
 
 // public properties:
@@ -89,7 +97,7 @@ var p = MouseEvent.prototype;
 	 * @type Number
 	 **/
 	p.stageY = 0;
-	
+
 	/**
 	 * The raw x position relative to the stage. Normally this will be the same as the stageX value, unless
 	 * stage.mouseMoveOutside is true and the pointer is outside of the stage bounds.
@@ -107,50 +115,30 @@ var p = MouseEvent.prototype;
 	p.rawY = 0;
 
 	/**
-	 * The type of mouse event. This will be the same as the handler it maps to (onPress,
-	 * onMouseDown, onMouseUp, onMouseMove, or onClick).
-	 * @property type
-	 * @type String
-	 **/
-	p.type = null;
-
-	/**
 	 * The native MouseEvent generated by the browser. The properties and API for this
 	 * event may differ between browsers. This property will be null if the
 	 * EaselJS property was not directly generated from a native MouseEvent.
 	 * @property nativeEvent
-	 * @type MouseEvent
+	 * @type HtmlMouseEvent
 	 * @default null
 	 **/
 	p.nativeEvent = null;
-	 
+
+	// TODO: deprecated:
 	/**
-	 * For events of type "onPress" only you can assign a handler to the onMouseMove
-	 * property. This handler will be called every time the mouse is moved until the mouse is released.
-	 * This is useful for operations such as drag and drop.
+	 * REMOVED. Use the {{#crossLink "DisplayObject"}}{{/crossLink}} {{#crossLink "DisplayObject/pressmove:event"}}{{/crossLink}}
+	 * event.
 	 * @property onMouseMove
 	 * @type Function
-	 * @deprecated In favour of the "mousemove" event. Will be removed in a future version.
+	 * @deprecated Use the DisplayObject "pressmove" event.
 	 */
-	p.onMouseMove = null;
-	 
 	/**
-	 * For events of type "onPress" only you can assign a handler to the onMouseUp
-	 * property. This handler will be called every time the mouse is moved until the mouse is released.
-	 * This is useful for operations such as drag and drop.
+	 * REMOVED. Use the {{#crossLink "DisplayObject"}}{{/crossLink}} {{#crossLink "DisplayObject/pressup:event"}}{{/crossLink}}
+	 * event.
 	 * @property onMouseUp
 	 * @type Function
-	 * @deprecated In favour of the "mouseup" event. Will be removed in a future version.
+	 * @deprecated Use the DisplayObject "pressup" event.
 	 */
-	p.onMouseUp = null;
-
-	/**
-	 * The display object this event relates to.
-	 * @property target
-	 * @type DisplayObject
-	 * @default null
-	*/
-	p.target = null;
 
 	/**
 	 * The unique id for the pointer (touch point or cursor). This will be either -1 for the mouse, or the system
@@ -168,34 +156,67 @@ var p = MouseEvent.prototype;
 	 */
 	p.primary = false;
 	
+// getter / setters:
+	/**
+	 * Returns the x position of the mouse in the local coordinate system of the current target (ie. the dispatcher).
+	 * @property localX
+	 * @type {Number}
+	 * @readonly
+	 */
+	p._get_localX = function() {
+		return this.currentTarget.globalToLocal(this.rawX, this.rawY).x;
+	};
 	
-// mix-ins:
-	// EventDispatcher methods:
-	p.addEventListener = null;
-	p.removeEventListener = null;
-	p.removeAllEventListeners = null;
-	p.dispatchEvent = null;
-	p.hasEventListener = null;
-	p._listeners = null;
-	createjs.EventDispatcher.initialize(p); // inject EventDispatcher methods.
+	/**
+	 * Returns the y position of the mouse in the local coordinate system of the current target (ie. the dispatcher).
+	 * @property localY
+	 * @type {Number}
+	 * @readonly
+	 */
+	p._get_localY = function() {
+		return this.currentTarget.globalToLocal(this.rawX, this.rawY).y;
+	};
+	
+	try {
+		Object.defineProperties(p, {
+			localX: { get: p._get_localX },
+			localY: { get: p._get_localY }
+		});
+	} catch (e) {} // TODO: use Log
 
 // constructor:
 	/**
+	 * @property Event_initialize
+	 * @private
+	 * @type Function
+	 **/
+	p.Event_initialize = p.initialize;
+
+	/**
 	 * Initialization method.
 	 * @method initialize
+	 * @param {String} type The event type.
+	 * @param {Boolean} bubbles Indicates whether the event will bubble through the display list.
+	 * @param {Boolean} cancelable Indicates whether the default behaviour of this event can be cancelled.
+	 * @param {Number} stageX The normalized x position relative to the stage.
+	 * @param {Number} stageY The normalized y position relative to the stage.
+	 * @param {MouseEvent} nativeEvent The native DOM event related to this mouse event.
+	 * @param {Number} pointerID The unique id for the pointer.
+	 * @param {Boolean} primary Indicates whether this is the primary pointer in a multitouch environment.
+	 * @param {Number} rawX The raw x position relative to the stage.
+	 * @param {Number} rawY The raw y position relative to the stage.
 	 * @protected
 	 **/
-	p.initialize = function(type, stageX, stageY, target, nativeEvent, pointerID, primary, rawX, rawY) {
-		this.type = type;
+	p.initialize = function(type, bubbles, cancelable, stageX, stageY, nativeEvent, pointerID, primary, rawX, rawY) {
+		this.Event_initialize(type, bubbles, cancelable);
 		this.stageX = stageX;
 		this.stageY = stageY;
-		this.target = target;
 		this.nativeEvent = nativeEvent;
 		this.pointerID = pointerID;
 		this.primary = primary;
 		this.rawX = (rawX==null)?stageX:rawX;
 		this.rawY = (rawY==null)?stageY:rawY;
-	}
+	};
 
 // public methods:
 	/**
@@ -204,8 +225,8 @@ var p = MouseEvent.prototype;
 	 * @return {MouseEvent} a clone of the MouseEvent instance.
 	 **/
 	p.clone = function() {
-		return new MouseEvent(this.type, this.stageX, this.stageY, this.target, this.nativeEvent, this.pointerID, this.primary, this.rawX, this.rawY);
-	}
+		return new MouseEvent(this.type, this.bubbles, this.cancelable, this.stageX, this.stageY, this.target, this.nativeEvent, this.pointerID, this.primary, this.rawX, this.rawY);
+	};
 
 	/**
 	 * Returns a string representation of this object.
@@ -214,7 +235,7 @@ var p = MouseEvent.prototype;
 	 **/
 	p.toString = function() {
 		return "[MouseEvent (type="+this.type+" stageX="+this.stageX+" stageY="+this.stageY+")]";
-	}
+	};
 
 createjs.MouseEvent = MouseEvent;
 }());

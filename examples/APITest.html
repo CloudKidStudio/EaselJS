@@ -12,24 +12,36 @@
 
 <script type="text/javascript" src="assets/StringUtils.js"></script>
 
-<script type="text/javascript" src="../src/easeljs/events/EventDispatcher.js"></script>
+<!-- Note: All core EaselJS classes are listed here: -->
+<script type="text/javascript" src="../src/createjs/events/Event.js"></script>
+<script type="text/javascript" src="../src/createjs/events/EventDispatcher.js"></script>
+<script type="text/javascript" src="../src/createjs/utils/IndexOf.js"></script>
 <script type="text/javascript" src="../src/easeljs/utils/UID.js"></script>
+<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
 <script type="text/javascript" src="../src/easeljs/geom/Matrix2D.js"></script>
+<script type="text/javascript" src="../src/easeljs/geom/Point.js"></script>
+<script type="text/javascript" src="../src/easeljs/geom/Rectangle.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/Shadow.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/SpriteSheet.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/DisplayObject.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/Container.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/Stage.js"></script>
-<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
-<script type="text/javascript" src="../src/easeljs/display/Shape.js"></script>
-<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
-<script type="text/javascript" src="../src/easeljs/geom/Rectangle.js"></script>
-<script type="text/javascript" src="../src/easeljs/geom/Point.js"></script>
-<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
-<script type="text/javascript" src="../src/easeljs/display/SpriteSheet.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/Bitmap.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/Sprite.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/BitmapAnimation.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/BitmapText.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/Shape.js"></script>
 <script type="text/javascript" src="../src/easeljs/display/Text.js"></script>
+<script type="text/javascript" src="../src/easeljs/display/DOMElement.js"></script>
+<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
 <script type="text/javascript" src="../src/easeljs/filters/Filter.js"></script>
-<script type="text/javascript" src="../src/easeljs/filters/BoxBlurFilter.js"></script>
+<script type="text/javascript" src="../src/easeljs/ui/ButtonHelper.js"></script>
+<script type="text/javascript" src="../src/easeljs/ui/Touch.js"></script>
+<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetUtils.js"></script>
+<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetBuilder.js"></script>
+
+<script type="text/javascript" src="../src/easeljs/filters/BlurFilter.js"></script>
 <script type="text/javascript" src="../src/easeljs/filters/ColorFilter.js"></script>
 <script type="text/javascript" src="../src/easeljs/filters/ColorMatrixFilter.js"></script>
 
@@ -106,7 +118,7 @@ function init() {
             return new Graphics().beginStroke(STROKE_COLOR).beginBitmapFill(img).drawCircle(30, 30, 30).endStroke();
         }},
         {label:'Text', code:textDemo },
-        {label:'BitmapAnimation', code:bitmapAnimationDemo },
+        {label:'Sprite', code:spriteDemo },
         {label:'Blur Filter', code:blurFilter },
         {label:'Remove Red Color Filter', code:colorFilter },
         {label:'ColorMatrixFilter', code:colorMatrixFilter },
@@ -119,9 +131,9 @@ function mouseDemo(stage) {
     //Click one of the shapes.
     var sprite = new createjs.Shape();
     sprite.graphics.beginFill(FILL_COLOR).drawCircle(30, 30, 20).moveTo(50, 50).drawRect(50, 50, 25, 25);
-    sprite.onClick = function (event) {
+    sprite.addEventListener("click", function (event) {
         alert('Click!');
-    };
+    });
 
     stage.addChild(sprite);
 }
@@ -150,7 +162,7 @@ function colorMatrixFilter(stage) {
 }
 
 function blurFilter(stage) {
-    var blurFilter = new createjs.BoxBlurFilter(5, 2, 2);
+    var blurFilter = new createjs.BlurFilter(5, 2, 2);
     var margins = blurFilter.getBounds();
     var image = new createjs.Bitmap(img);
     image.filters = [blurFilter];
@@ -175,7 +187,7 @@ function textDemo(stage) {
     stage.addChild(txt);
 }
 
-function bitmapAnimationDemo(stage) {
+function spriteDemo(stage) {
     var ss = new createjs.SpriteSheet({ "animations":{
         "run":[0, 25],
         "jump":[26, 63]},
@@ -189,18 +201,16 @@ function bitmapAnimationDemo(stage) {
         }
     });
 
-    ss.getAnimation("run").frequency = 2;
+    ss.getAnimation("run").speed = 2;
     ss.getAnimation("run").next = "jump";
     ss.getAnimation("jump").next = "run";
 
-    var bitmapAnimation = new createjs.BitmapAnimation(ss);
-    bitmapAnimation.scaleY = bitmapAnimation.scaleX = .4;
-
-    bitmapAnimation.gotoAndPlay("run");
+    var sprite = new createjs.Sprite(ss, "run");
+    sprite.scaleY = sprite.scaleX = 0.4;
 
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", stage);
-    stage.addChild(bitmapAnimation);
+    stage.addChild(sprite);
 }
 
 function layout() {

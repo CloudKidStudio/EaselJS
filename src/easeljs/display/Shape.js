@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,10 +26,15 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * @module EaselJS
+ */
+
 // namespace:
 this.createjs = this.createjs||{};
 
 (function() {
+	"use strict";
 
 /**
  * A Shape allows you to display vector art in the display list. It composites a {{#crossLink "Graphics"}}{{/crossLink}}
@@ -41,9 +46,10 @@ this.createjs = this.createjs||{};
  * rendering cost.
  *
  * <h4>Example</h4>
+ *
  *      var graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(0, 0, 100, 100);
  *      var shape = new createjs.Shape(graphics);
- *      
+ *
  *      //Alternatively use can also use the graphics property of the Shape class to renderer the same as above.
  *      var shape = new createjs.Shape();
  *      shape.graphics.beginFill("#ff0000").drawRect(0, 0, 100, 100);
@@ -65,7 +71,7 @@ var p = Shape.prototype = new createjs.DisplayObject();
 	 * @type Graphics
 	 **/
 	p.graphics = null;
-	
+
 // constructor:
 	/**
 	 * @property DisplayObject_initialize
@@ -74,7 +80,7 @@ var p = Shape.prototype = new createjs.DisplayObject();
 	 **/
 	p.DisplayObject_initialize = p.initialize;
 
-	/** 
+	/**
 	 * Initialization method.
 	 * @method initialize
 	 * @param {Graphics} graphics
@@ -103,25 +109,26 @@ var p = Shape.prototype = new createjs.DisplayObject();
 	 * @type Function
 	 **/
 	p.DisplayObject_draw = p.draw;
-	
+
 	/**
-	 * Draws the Shape into the specified context ignoring it's visible, alpha, shadow, and transform. Returns true if
+	 * Draws the Shape into the specified context ignoring its visible, alpha, shadow, and transform. Returns true if
 	 * the draw was handled (useful for overriding functionality).
 	 *
 	 * <i>NOTE: This method is mainly for internal use, though it may be useful for advanced uses.</i>
 	 * @method draw
 	 * @param {CanvasRenderingContext2D} ctx The canvas 2D context object to draw into.
-	 * @param {Boolean} ignoreCache Indicates whether the draw operation should ignore any current cache. For example,
+	 * @param {Boolean} [ignoreCache=false] Indicates whether the draw operation should ignore any current cache. For example,
 	 * used for drawing the cache (to prevent it from simply drawing an existing cache back into itself).
+	 * @return {Boolean}
 	 **/
 	p.draw = function(ctx, ignoreCache) {
 		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
 		this.graphics.draw(ctx);
 		return true;
 	}
-	
+
 	/**
-	 * Returns a clone of this Shape. Some properties that are specific to this instance's current context are reverted to 
+	 * Returns a clone of this Shape. Some properties that are specific to this instance's current context are reverted to
 	 * their defaults (for example .parent).
 	 * @method clone
 	 * @param {Boolean} recursive If true, this Shape's {{#crossLink "Graphics"}}{{/crossLink}} instance will also be
@@ -132,7 +139,7 @@ var p = Shape.prototype = new createjs.DisplayObject();
 		this.cloneProps(o);
 		return o;
 	}
-		
+
 	/**
 	 * Returns a string representation of this object.
 	 * @method toString

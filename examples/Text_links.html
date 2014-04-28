@@ -6,17 +6,34 @@
 
 	<link href="assets/demoStyles.css" rel="stylesheet" type="text/css" />
 
+	<!-- Note: All core EaselJS classes are listed here: -->
+	<script type="text/javascript" src="../src/createjs/events/Event.js"></script>
+	<script type="text/javascript" src="../src/createjs/events/EventDispatcher.js"></script>
+	<script type="text/javascript" src="../src/createjs/utils/IndexOf.js"></script>
 	<script type="text/javascript" src="../src/easeljs/utils/UID.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
 	<script type="text/javascript" src="../src/easeljs/geom/Matrix2D.js"></script>
-	<script type="text/javascript" src="../src/easeljs/events/EventDispatcher.js"></script>
+	<script type="text/javascript" src="../src/easeljs/geom/Point.js"></script>
+	<script type="text/javascript" src="../src/easeljs/geom/Rectangle.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Shadow.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/SpriteSheet.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/DisplayObject.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Container.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Stage.js"></script>
-	<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Bitmap.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Sprite.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/BitmapAnimation.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/BitmapText.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Shape.js"></script>
-	<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
-	<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Text.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/DOMElement.js"></script>
+	<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
+	<script type="text/javascript" src="../src/easeljs/filters/Filter.js"></script>
+	<script type="text/javascript" src="../src/easeljs/ui/ButtonHelper.js"></script>
+	<script type="text/javascript" src="../src/easeljs/ui/Touch.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetUtils.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetBuilder.js"></script>
 
 	<!-- We also provide hosted minified versions of all CreateJS libraries.
 	  http://code.createjs.com -->
@@ -39,6 +56,9 @@
 			this.hover = false;
 			this.hitArea = new createjs.Shape();
 			this.textBaseline = "top";
+			
+			this.addEventListener("rollover", this);
+			this.addEventListener("rollout", this);
 		}
 		
 		// use the same approach with draw:
@@ -55,15 +75,12 @@
 			this.color = color;
 			
 			// update hit area so the full text area is clickable, not just the characters:
-			this.hitArea.graphics.clear().beginFill("#FFF").drawRect(0,0,this.lineWidth||this.getMeasuredWidth(), this.getMeasuredHeight());
+			this.hitArea.graphics.clear().beginFill("#FFF").drawRect(0,0,this.getMeasuredWidth(), this.getMeasuredHeight());
 		}
 
 		// set up the handlers for mouseover / out:
-		TextLink.prototype.onMouseOver = function() {
-			this.hover = true;
-		}
-		TextLink.prototype.onMouseOut = function() {
-			this.hover = false;
+		TextLink.prototype.handleEvent = function(evt) {
+			this.hover = (evt.type == "rollover");
 		}
 	</script>
 

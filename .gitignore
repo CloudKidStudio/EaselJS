@@ -8,6 +8,15 @@ build/tools/yuidoc/.git/*
 
 build/output/
 build/tmp/
-/.idea/
 *TMP*
 node_modules/
+.idea/
+*.sublime-project
+*.sublime-workspace
+config.local.json
+
+#-----------------------------
+# INVALID FILES
+# (for cross OS compatibility)
+#-----------------------------
+*[\<\>\:\"\/\\\|\?\*]*

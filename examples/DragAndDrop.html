@@ -6,19 +6,34 @@
 
 	<link href="assets/demoStyles.css" rel="stylesheet" type="text/css" />
 
+	<!-- Note: All core EaselJS classes are listed here: -->
+	<script type="text/javascript" src="../src/createjs/events/Event.js"></script>
+	<script type="text/javascript" src="../src/createjs/events/EventDispatcher.js"></script>
+	<script type="text/javascript" src="../src/createjs/utils/IndexOf.js"></script>
 	<script type="text/javascript" src="../src/easeljs/utils/UID.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
 	<script type="text/javascript" src="../src/easeljs/geom/Matrix2D.js"></script>
-	<script type="text/javascript" src="../src/easeljs/events/EventDispatcher.js"></script>
+	<script type="text/javascript" src="../src/easeljs/geom/Point.js"></script>
+	<script type="text/javascript" src="../src/easeljs/geom/Rectangle.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Shadow.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/SpriteSheet.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/DisplayObject.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Container.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Stage.js"></script>
-	<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
-	<script type="text/javascript" src="../src/easeljs/display/Shape.js"></script>
-	<script type="text/javascript" src="../src/easeljs/display/Graphics.js"></script>
-	<script type="text/javascript" src="../src/easeljs/utils/Ticker.js"></script>
-	<script type="text/javascript" src="../src/easeljs/display/Text.js"></script>
-	<script type="text/javascript" src="../src/easeljs/ui/Touch.js"></script>
 	<script type="text/javascript" src="../src/easeljs/display/Bitmap.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Sprite.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/BitmapAnimation.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/BitmapText.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Shape.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/Text.js"></script>
+	<script type="text/javascript" src="../src/easeljs/display/DOMElement.js"></script>
+	<script type="text/javascript" src="../src/easeljs/events/MouseEvent.js"></script>
+	<script type="text/javascript" src="../src/easeljs/filters/Filter.js"></script>
+	<script type="text/javascript" src="../src/easeljs/ui/ButtonHelper.js"></script>
+	<script type="text/javascript" src="../src/easeljs/ui/Touch.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetUtils.js"></script>
+	<script type="text/javascript" src="../src/easeljs/utils/SpriteSheetBuilder.js"></script>
 
 	<!-- We also provide hosted minified versions of all CreateJS libraries.
 	  http://code.createjs.com -->
@@ -39,8 +54,6 @@
 		document.getElementById("loader").className = "loader";
 		// create stage and point it to the canvas:
 		canvas = document.getElementById("testCanvas");
-
-		//check to see if we are running in a browser with touch support
 		stage = new createjs.Stage(canvas);
 
 		// enable touch interactions if supported on the current device:
@@ -77,33 +90,33 @@
 			bitmap.regY = bitmap.image.height/2|0;
 			bitmap.scaleX = bitmap.scaleY = bitmap.scale = Math.random()*0.4+0.6;
 			bitmap.name = "bmp_"+i;
+			bitmap.cursor = "pointer";
+			
+			// using "on" binds the listener to the scope of the currentTarget by default
+			// in this case that means it executes in the scope of the button.
+			bitmap.on("mousedown", function(evt) {
+				this.parent.addChild(this);
+				this.offset = {x:this.x-evt.stageX, y:this.y-evt.stageY};
+			});
+			
+			// the pressmove event is dispatched when the mouse moves after a mousedown on the target until the mouse is released.
+			bitmap.on("pressmove", function(evt) {
+				this.x = evt.stageX+ this.offset.x;
+				this.y = evt.stageY+ this.offset.y;
+				// indicate that the stage should be updated on the next tick:
+				update = true;
+			});
+			
+			bitmap.on("rollover", function(evt) {
+				this.scaleX = this.scaleY = this.scale*1.2;
+				update = true;
+			});
+			
+			bitmap.on("rollout", function(evt) {
+				this.scaleX = this.scaleY = this.scale;
+				update = true;
+			});
 
-			// wrapper function to provide scope for the event handlers:
-			(function(target) {
-				bitmap.onPress = function(evt) {
-					// bump the target in front of it's siblings:
-					container.addChild(target);
-					var offset = {x:target.x-evt.stageX, y:target.y-evt.stageY};
-
-					// add a handler to the event object's onMouseMove callback
-					// this will be active until the user releases the mouse button:
-					evt.onMouseMove = function(ev) {
-						target.x = ev.stageX+offset.x;
-						target.y = ev.stageY+offset.y;
-						// indicate that the stage should be updated on the next tick:
-						update = true;
-					}
-				}
-				bitmap.onMouseOver = function() {
-					target.scaleX = target.scaleY = target.scale*1.2;
-					update = true;
-				}
-				bitmap.onMouseOut = function() {
-					target.scaleX = target.scaleY = target.scale;
-					update = true;
-				}
-				
-			})(bitmap);
 		}
 
 		document.getElementById("loader").className = "";
@@ -127,7 +140,7 @@
 
 	<header id="header" class="EaselJS">
 	    <h1><span class="text-product">Easel<strong>JS</strong></span> Drag &amp; Drop Example</h1>
-	    <p>Example of implementing drag &amp; drop using mouse events such as <strong>onPress</strong>, <strong>onMouseUp</strong>, and <strong>onMouseMove</strong>. Some browsers do not allow access to pixel data when running local files, and may throw a security error or not work unless the content is running on a server.</p>
+	    <p>Example of implementing drag &amp; drop using mouse events such as <strong>mousedown</strong>, <strong>mouseup</strong>, and <strong>pressmove</strong>. Some browsers do not allow access to pixel data when running local files, and may throw a security error or not work unless the content is running on a server.</p>
 	</header>
 
 	<div class="canvasHolder">

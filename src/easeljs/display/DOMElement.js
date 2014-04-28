@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,10 +26,15 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/**
+ * @module EaselJS
+ */
+
 // namespace:
 this.createjs = this.createjs||{};
 
 (function() {
+	"use strict";
 // TODO: fix problems with rotation.
 // TODO: exclude from getObjectsUnderPoint
 
@@ -81,21 +86,30 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 // private properties:
 	/**
 	 * @property _oldMtx
+	 * @type Matrix2D
 	 * @protected
 	 */
 	p._oldMtx = null;
+	
+	/**
+	 * @property _visible
+	 * @type Boolean
+	 * @protected
+	 */
+	p._visible = false;
 
 // constructor:
 	/**
 	 * @property DisplayObject_initialize
 	 * @type Function
-   * @private
+	 * @private
 	 */
 	p.DisplayObject_initialize = p.initialize;
 
 	/**
 	 * Initialization method.
 	 * @method initialize
+	 * @param {HTMLElement} htmlElement A reference or id for the DOM element to manage.
 	 * @protected
 	*/
 	p.initialize = function(htmlElement) {
@@ -107,7 +121,7 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 		// this relies on the _tick method because draw isn't called if a parent is not visible.
 		style.position = "absolute";
 		style.transformOrigin = style.WebkitTransformOrigin = style.msTransformOrigin = style.MozTransformOrigin = style.OTransformOrigin = "0% 0%";
-	}
+	};
 
 // public methods:
 	/**
@@ -119,10 +133,10 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 	 */
 	p.isVisible = function() {
 		return this.htmlElement != null;
-	}
+	};
 
 	/**
-	 * Draws the display object into the specified context ignoring it's visible, alpha, shadow, and transform.
+	 * Draws the display object into the specified context ignoring its visible, alpha, shadow, and transform.
 	 * Returns true if the draw was handled (useful for overriding functionality).
 	 * NOTE: This method is mainly for internal use, though it may be useful for advanced uses.
 	 * @method draw
@@ -130,26 +144,11 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 	 * @param {Boolean} ignoreCache Indicates whether the draw operation should ignore any current cache.
 	 * For example, used for drawing the cache (to prevent it from simply drawing an existing cache back
 	 * into itself).
+	 * @return {Boolean}
 	 */
 	p.draw = function(ctx, ignoreCache) {
-		if (this.htmlElement == null) { return; }
-		var mtx = this.getConcatenatedMatrix(this._matrix);
-		
-		var o = this.htmlElement;
-		var style = o.style;
-		
 		// this relies on the _tick method because draw isn't called if a parent is not visible.
-		if (this.visible) { style.visibility = "visible"; }
-		else { return true; }
-		
-		var oMtx = this._oldMtx||{};
-		if (oMtx.alpha != mtx.alpha) { style.opacity = ""+mtx.alpha; oMtx.alpha = mtx.alpha; }
-		if (oMtx.tx != mtx.tx || oMtx.ty != mtx.ty || oMtx.a != mtx.a || oMtx.b != mtx.b || oMtx.c != mtx.c || oMtx.d != mtx.d) {
-			style.transform = style.WebkitTransform = style.OTransform =  style.msTransform = ["matrix("+mtx.a,mtx.b,mtx.c,mtx.d,(mtx.tx+0.5|0),(mtx.ty+0.5|0)+")"].join(",");
-			style.MozTransform = ["matrix("+mtx.a,mtx.b,mtx.c,mtx.d,(mtx.tx+0.5|0)+"px",(mtx.ty+0.5|0)+"px)"].join(",");
-			this._oldMtx = mtx.clone();
-		}
-		
+		// the actual update happens in _handleDrawEnd
 		return true;
 	};
 
@@ -173,7 +172,7 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 
 	/**
 	 * Not applicable to DOMElement.
-	 * @method hitArea
+	 * @method hitTest
 	 */
 	p.hitTest = function() {};
 
@@ -211,36 +210,36 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 	p.toString = function() {
 		return "[DOMElement (name="+  this.name +")]";
 	};
-    
+
 	/**
      * Interaction events should be added to `htmlElement`, and not the DOMElement instance, since DOMElement instances
 	 * are not full EaselJS display objects and do not participate in EaselJS mouse events.
 	 * @event click
 	 */
-          
+
      /**
      * Interaction events should be added to `htmlElement`, and not the DOMElement instance, since DOMElement instances
  	 * are not full EaselJS display objects and do not participate in EaselJS mouse events.
 	 * @event dblClick
 	 */
-     
+
      /**
       * Interaction events should be added to `htmlElement`, and not the DOMElement instance, since DOMElement instances
  	  * are not full EaselJS display objects and do not participate in EaselJS mouse events.
 	  * @event mousedown
 	  */
-     
+
      /**
       * The HTMLElement can listen for the mouseover event, not the DOMElement instance.
       * Since DOMElement instances are not full EaselJS display objects and do not participate in EaselJS mouse events.
       * @event mouseover
-	  */ 
-     
+	  */
+
      /**
       * Not applicable to DOMElement.
 	  * @event tick
 	  */
-     
+
 
 // private methods:
 	/**
@@ -249,15 +248,47 @@ var p = DOMElement.prototype = new createjs.DisplayObject();
 	 * @protected
 	 */
 	p.DisplayObject__tick = p._tick;
-	
+
 	/**
 	 * @method _tick
+	 * @param {Object} props Properties to copy to the DisplayObject {{#crossLink "DisplayObject/tick"}}{{/crossLink}} event object.
+	 * function.
 	 * @protected
 	 */
-	p._tick = function(params) {
-		// TODO: figure out how to get around this.
-		this.htmlElement.style.visibility = "hidden";
-		this.DisplayObject__tick(params);
+	p._tick = function(props) {
+		var stage = this.getStage();
+		stage&&stage.on("drawend", this._handleDrawEnd, this, true);
+		this.DisplayObject__tick(props);
+	};
+	
+	/**
+	 * @method _handleDrawEnd
+	 * @param {Event} evt
+	 * @protected
+	 */
+	p._handleDrawEnd = function(evt) {
+		var o = this.htmlElement;
+		if (!o) { return; }
+		var style = o.style;
+		
+		var mtx = this.getConcatenatedMatrix(this._matrix);
+		
+		var visibility = mtx.visible ? "visible" : "hidden";
+		if (visibility != style.visibility) { style.visibility = visibility; }
+		if (!mtx.visible) { return; }
+		
+		var oMtx = this._oldMtx;
+		var n = 10000; // precision
+		if (!oMtx || oMtx.alpha != mtx.alpha) {
+			style.opacity = ""+(mtx.alpha*n|0)/n;
+			if (oMtx) { oMtx.alpha = mtx.alpha; }
+		}
+		if (!oMtx || oMtx.tx != mtx.tx || oMtx.ty != mtx.ty || oMtx.a != mtx.a || oMtx.b != mtx.b || oMtx.c != mtx.c || oMtx.d != mtx.d) {
+			var str = "matrix(" + (mtx.a*n|0)/n +","+ (mtx.b*n|0)/n +","+ (mtx.c*n|0)/n +","+ (mtx.d*n|0)/n +","+ (mtx.tx+0.5|0);
+			style.transform = style.WebkitTransform = style.OTransform = style.msTransform = str +","+ (mtx.ty+0.5|0) +")";
+			style.MozTransform = str +"px,"+ (mtx.ty+0.5|0) +"px)";
+			this._oldMtx = oMtx ? oMtx.copy(mtx) : mtx.clone();
+		}
 	};
 
 createjs.DOMElement = DOMElement;

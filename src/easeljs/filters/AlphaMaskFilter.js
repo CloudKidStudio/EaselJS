@@ -26,10 +26,15 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * @module EaselJS
+ */
+
 // namespace:
 this.createjs = this.createjs || {};
 
 (function () {
+	"use strict";
 
 	/**
 	 * Applies the alpha from the mask image (or canvas) to the target, such that the alpha channel of the result will
@@ -61,14 +66,14 @@ this.createjs = this.createjs || {};
 	 **/
 	var AlphaMaskFilter = function (mask) {
 		this.initialize(mask);
-	}
+	};
 	var p = AlphaMaskFilter.prototype = new createjs.Filter();
 
 // constructor:
 	/** @ignore */
 	p.initialize = function (mask) {
 		this.mask = mask;
-	}
+	};
 
 // public properties:
 
@@ -119,19 +124,20 @@ this.createjs = this.createjs || {};
 		targetCtx.drawImage(this.mask, targetX, targetY);
 		targetCtx.restore();
 		return true;
-	}
+	};
 
 	/**
 	 * Returns a clone of this object.
+	 * @method clone
 	 * @return {AlphaMaskFilter}
 	 **/
 	p.clone = function () {
 		return new AlphaMaskFilter(this.mask);
-	}
+	};
 
 	p.toString = function () {
 		return "[AlphaMaskFilter]";
-	}
+	};
 
 // private methods:
 
