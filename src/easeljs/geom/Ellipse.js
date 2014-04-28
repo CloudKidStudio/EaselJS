@@ -22,7 +22,7 @@ this.createjs = this.createjs||{};
      * @param width {Number} The overall width of this ellipse
      * @param height {Number} The overall height of this ellipse
      */
-    Ellipse = function(x, y, width, height)
+    var Ellipse = function(x, y, width, height)
     {
         /**
          * @property x

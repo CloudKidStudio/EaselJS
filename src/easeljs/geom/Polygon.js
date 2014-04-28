@@ -21,7 +21,7 @@ this.createjs = this.createjs||{};
      *      arguments passed can be flat x,y values e.g. `new createjs.Polygon(x,y, x,y, x,y, ...)` where `x` and `y` are
      *      Numbers.
      */
-    Polygon = function(points)
+    var Polygon = function(points)
     {
         //if points isn't an array, use arguments as the array
         if(!(points instanceof Array))
