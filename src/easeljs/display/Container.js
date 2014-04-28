@@ -581,13 +581,13 @@ var p = Container.prototype = new createjs.DisplayObject();
 	 * @protected
 	 **/
 	p._getObjectsUnderPoint = function(x, y, arr, mouse, activeListener) {
-		if(this.hitRect)
+		if(this.hitShape)
 		{
 			var mtx = this.getConcatenatedMatrix(this._matrix);
-			if (mtx == null) { return this.hitRect.contains(x, y) ? this : null; }
+			if (mtx == null) { return this.hitShape.contains(x, y) ? this : null; }
 			mtx.invert();
 			mtx.append(1, 0, 0, 1, x, y);
-			return this.hitRect.contains(mtx.tx, mtx.ty) ? this : null;
+			return this.hitShape.contains(mtx.tx, mtx.ty) ? this : null;
 		}		var ctx = createjs.DisplayObject._hitTestContext;
 		var mtx = this._matrix;
 		activeListener = activeListener || (mouse&&this._hasMouseEventListener());
@@ -599,17 +599,17 @@ var p = Container.prototype = new createjs.DisplayObject();
 			var child = children[i];
 			var hitArea = child.hitArea, mask = child.mask;
 			if (!child.visible || (!hitArea && !child.isVisible()) || (mouse && !child.mouseEnabled)) { continue; }
-			if(child.hitRect)
+			if(child.hitShape)
 			{
 				var mtx = child.getConcatenatedMatrix(child._matrix);
 				var result;
 				if (mtx == null) {
-					result = child.hitRect.contains(x, y);
+					result = child.hitShape.contains(x, y);
 				}
 				else {
 					mtx.invert();
 					mtx.append(1, 0, 0, 1, x, y);
-					result = child.hitRect.contains(mtx.tx, mtx.ty);
+					result = child.hitShape.contains(mtx.tx, mtx.ty);
 				}
 				if(result)
 				{

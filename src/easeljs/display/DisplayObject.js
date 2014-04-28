@@ -581,12 +581,28 @@ var p = DisplayObject.prototype = new createjs.EventDispatcher();
 	
 	/**
 	 * A createjs.Rectangle object used for all hit testing. This is used in place of hitArea or pixel testing, and should be much
-	 * faster in addition to working with cross domain images.
+	 * faster in addition to working with cross domain images. This is deprecated in favor of hitShape.
 	 * @property hitRect
-	 * @type {Rectangle}
+	 * @type {Rectangle|Circle|Ellipse|Polygon}
+	 * @default null
+	 * @deprecated
+	 */
+	Object.defineProperty(p, "hitRect", {
+		get: function() { return this.hitShape; },
+		set: function(value)
+		{
+			this.hitShape = value;
+		}
+	});
+
+	/**
+	 * A createjs.Rectangle, createjs.Circle, createjs.Ellipse, or createjs.Polygon object used for all hit testing. 
+	 * This is used in place of hitArea or pixel testing, and should be much faster in addition to working with cross domain images.
+	 * @property hitShape
+	 * @type {Rectangle|Circle|Ellipse|Polygon}
 	 * @default null
 	 */
-	p.hitRect = null;
+	p.hitShape = null;
 	
 	/**
 	 * A CSS cursor (ex. "pointer", "help", "text", etc) that will be displayed when the user hovers over this display
@@ -1059,9 +1075,9 @@ var p = DisplayObject.prototype = new createjs.EventDispatcher();
 	*/
 	p.hitTest = function(x, y) {
 		// TODO: update with support for .hitArea & .mask and update hitArea / mask docs?
-		if(this.hitRect)
+		if(this.hitShape)
 		{
-			return this.hitRect.contains(x, y);
+			return this.hitShape.contains(x, y);
 		}
 		else
 		{
