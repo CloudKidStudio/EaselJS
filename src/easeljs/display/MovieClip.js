@@ -328,12 +328,12 @@ var p = MovieClip.prototype = new createjs.Container();
 	
 	/**
 	 * When the MovieClip is framerate independent, this is the total time in seconds for the animation.
-	 * @property _animDuration
+	 * @property _duration
 	 * @type Number
 	 * @default 0
 	 * @private
 	 */
-	p._animDuration = 0;
+	p._duration = 0;
 
 	/**
 	 * @property _synchOffset
