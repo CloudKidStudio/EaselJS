@@ -149,6 +149,8 @@ var p = Bitmap.prototype = new createjs.DisplayObject();
 		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
 		var rect = this.sourceRect;
 		if (rect) {
+			if(rect.width < 1 || rect.height < 1)//safe quit if we aren't drawing any actual pixels
+				return true;
 			ctx.drawImage(this.image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
 		} else {
 			ctx.drawImage(this.image, 0, 0);

@@ -1,7 +1,7 @@
 {
 	"name": "easeljs",
-	"version": "0.7.2",
-	"main": "lib/easeljs-0.7.2.min.js",
+	"version": "0.7.3",
+	"main": "lib/easeljs.min.js",
 	"ignore": [
 		"**/.*",
 		"node_modules",
