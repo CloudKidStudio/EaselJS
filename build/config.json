@@ -36,11 +36,14 @@
 		"../src/easeljs/filters/ColorMatrix.js",
 		"../src/easeljs/filters/ColorMatrixFilter.js",
 		"../src/easeljs/ui/Touch.js",
+		"../src/easeljs/utils/BitmapUtils.js",
+		"../src/easeljs/utils/TextureAtlas.js",
 		"../src/easeljs/version.js"
 	],
 
 	"movieclip_source": [
 		"../src/easeljs/display/MovieClip.js",
+		"../src/easeljs/display/BitmapMovieClip.js",
 		"../src/easeljs/version_movieclip.js"
 	],
 
