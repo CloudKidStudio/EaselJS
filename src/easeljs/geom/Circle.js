@@ -17,8 +17,8 @@ this.createjs = this.createjs||{};
      *
      * @class Circle
      * @constructor
-     * @param x {Number} The X coord of the upper-left corner of the framing rectangle of this circle
-     * @param y {Number} The Y coord of the upper-left corner of the framing rectangle of this circle
+     * @param x {Number} The X coord of the center of this circle
+     * @param y {Number} The Y coord of the center of this circle
      * @param radius {Number} The radius of the circle
      */
     var Circle = function(x, y, radius)
@@ -51,7 +51,7 @@ this.createjs = this.createjs||{};
      * Creates a clone of this Circle instance
      *
      * @method clone
-     * @return {Circle} a copy of the polygon
+     * @return {Circle} a copy of the circle
      */
     p.clone = function()
     {
@@ -64,7 +64,7 @@ this.createjs = this.createjs||{};
      * @method contains
      * @param x {Number} The X coord of the point to test
      * @param y {Number} The Y coord of the point to test
-     * @return {Boolean} if the x/y coords are within this polygon
+     * @return {Boolean} if the x/y coords are within this circle
      */
     p.contains = function(x, y)
     {
