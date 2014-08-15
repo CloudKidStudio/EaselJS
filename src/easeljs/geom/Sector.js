@@ -56,7 +56,8 @@ this.createjs = this.createjs||{};
          * @default 0
          */
         this.startAngle = startAngle || 0;
-        if(this.startAngle < 0)
+        //for math purposes, ensure that this is greater than 0
+        while(this.startAngle < 0)
             this.startAngle += 360;
 
         /**
@@ -65,7 +66,8 @@ this.createjs = this.createjs||{};
          * @default 0
          */
         this.endAngle = endAngle || 0;
-        if(this.endAngle < 0)
+        //for math purposes, ensure that this is greater than startAngle
+        if(this.endAngle < this.startAngle)
             this.endAngle += 360;
     }
 
@@ -79,7 +81,7 @@ this.createjs = this.createjs||{};
      */
     p.clone = function()
     {
-        return new Sector(this.x, this.y, this.radius);
+        return new Sector(this.x, this.y, this.radius, this.startAngle, this.endAngle);
     }
 
     /**
@@ -105,8 +107,9 @@ this.createjs = this.createjs||{};
         if(dx + dy > r2) return false;
 
         var angle = Math.atan2(y - this.y, x - this.x) * RAD_TO_DEGREES;
-        if(angle < 0) angle += 360;
-        return angle >= startAngle && angle <= endAngle;
+        //make the angle in the same space as the sector
+        while(angle < this.startAngle) angle += 360;
+        return angle >= this.startAngle && angle <= this.endAngle;
     }
 
     // constructor
