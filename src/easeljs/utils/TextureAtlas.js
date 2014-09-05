@@ -114,6 +114,7 @@ this.createjs = this.createjs||{};
 		var compareLength = compares.length;//the length of the compar
 
 		var prevTex;//the previous Texture, so we can place the same object in multiple times to control animation rate
+		var len;
 		for(i = numberMin, len = numberMax; i <= len; ++i)
 		{
 			var num = null;
