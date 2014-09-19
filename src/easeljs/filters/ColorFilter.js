@@ -130,6 +130,26 @@ var p = ColorFilter.prototype = new createjs.Filter();
 	 **/
 	p.alphaOffset = 0;
 
+	/*
+	See if the browser does pixel manipulation normally, or we have to account for premultiplied alpha
+	see http://community.createjs.com/discussions/easeljs/841-using-colortint-on-png-with-android-internet-browser
+	 */
+	function canHandleTrPxMan() {
+        var c, s1, s2;
+        c = document.createElement("canvas");
+        c.width = 2;
+        c.height = 1;
+        c = c.getContext('2d');
+        c.fillStyle = "rgba(10,20,30,0.5)";
+        c.fillRect(0,0,1,1);
+        s1 = c.getImageData(0,0,1,1);
+        c.putImageData(s1, 1, 0);
+        s2 = c.getImageData(1,0,1,1);
+        return (s2.data[0] === s1.data[0] && s2.data[1] === s1.data[1] && s2.data[2] === s1.data[2] && s2.data[3] === s1.data[3]);
+    }
+
+	var noPremultipliedAlpha = canHandleTrPxMan();
+
 // constructor:
 	/**
 	 * Initialization method.
@@ -171,12 +191,31 @@ var p = ColorFilter.prototype = new createjs.Filter();
 			return false;
 		}
 		var data = imageData.data;
-		var l = data.length;
-		for (var i=0; i<l; i+=4) {
-			data[i] = data[i]*this.redMultiplier+this.redOffset;
-			data[i+1] = data[i+1]*this.greenMultiplier+this.greenOffset;
-			data[i+2] = data[i+2]*this.blueMultiplier+this.blueOffset;
-			data[i+3] = data[i+3]*this.alphaMultiplier+this.alphaOffset;
+		var i, l = data.length;
+		//see http://community.createjs.com/discussions/easeljs/841-using-colortint-on-png-with-android-internet-browser
+		if(noPremultipliedAlpha)
+		{
+			for (i=0; i<l; i+=4) {
+				data[i] = data[i]*this.redMultiplier+this.redOffset;
+				data[i+1] = data[i+1]*this.greenMultiplier+this.greenOffset;
+				data[i+2] = data[i+2]*this.blueMultiplier+this.blueOffset;
+				data[i+3] = data[i+3]*this.alphaMultiplier+this.alphaOffset;
+			}
+		}
+		else
+		{
+			for (i=0; i<l; i+=4) {
+				data[i] = data[i]*this.redMultiplier+this.redOffset ;
+				data[i+1] = data[i+1]*this.greenMultiplier+this.greenOffset;
+				data[i+2] = data[i+2]*this.blueMultiplier+this.blueOffset;
+				data[i+3] = data[i+3]*this.alphaMultiplier+this.alphaOffset;
+
+				var alpha = data[i+3] / 255;
+
+				data[i] *= alpha;
+				data[i+1] *= alpha;
+				data[i+2] *= alpha;
+			}
 		}
 		targetCtx.putImageData(imageData, targetX, targetY);
 		return true;
