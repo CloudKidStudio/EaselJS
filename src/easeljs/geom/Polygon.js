@@ -63,13 +63,19 @@ this.createjs = this.createjs||{};
      * Checks if the x, and y coords passed to this function are contained within this polygon
      *
      * @method contains
-     * @param x {Number} The X coord of the point to test
+     * @param x {Number or Point} The X coord of the point to test (or Point instance)
      * @param y {Number} The Y coord of the point to test
      * @return {Boolean} if the x/y coords are within this polygon
      */
     p.contains = function(x, y)
     {
-        var inside = false;
+      if (x.x) {
+        //x is a Point
+        y = x.y;
+        x = x.x;
+      }
+
+      var inside = false;
 
         // use some raycasting to test hits
         // https://github.com/substack/point-in-polygon/blob/master/index.js

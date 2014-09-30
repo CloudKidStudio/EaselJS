@@ -85,7 +85,7 @@ var p = Rectangle.prototype;
 	p.height = 0;
 
 // constructor:
-	/** 
+	/**
 	 * Initialization method. Can also be used to reinitialize the instance.
 	 * @method initialize
 	 * @param {Number} [x=0] X position.
@@ -101,7 +101,7 @@ var p = Rectangle.prototype;
 		this.height = height||0;
 		return this;
 	};
-	
+
 // public methods:
 	/**
 	 * Copies all properties from the specified rectangle to this rectangle.
@@ -112,7 +112,7 @@ var p = Rectangle.prototype;
 	p.copy = function(rectangle) {
 		return this.initialize(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	};
-	
+
 	/**
 	 * Returns a clone of the Rectangle instance.
 	 * @method clone
@@ -125,11 +125,16 @@ var p = Rectangle.prototype;
 	/**
 	 * Determines if a specified point is inside this rectangle
 	 * @method contains
-	 * @param {Number} x The x position to check in the rectangle.
+	 * @param {Number or Point} x The x position to check in the rectangle. May also be a Point reference
 	 * @param {Number} y The y position to check in the rectangle.
 	 * @return {Boolean} A Boolean indicating if the point is inside this rectangle.
 	 **/
 	p.contains = function(x, y) {
+		if (x.x) {
+			//x is a Point
+			y = x.y;
+			x = x.x;
+		}
 		return x >= this.x && y >= this.y && x <= this.x + this.width && y <= this.y + this.height;
 	}
 
@@ -141,6 +146,6 @@ var p = Rectangle.prototype;
 	p.toString = function() {
 		return "[Rectangle (x="+this.x+" y="+this.y+" width="+this.width+" height="+this.height+")]";
 	};
-	
+
 createjs.Rectangle = Rectangle;
 }());

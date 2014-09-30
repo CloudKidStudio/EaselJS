@@ -70,7 +70,7 @@ this.createjs = this.createjs||{};
      * Checks if the x, and y coords passed to this function are contained within this ellipse
      *
      * @method contains
-     * @param x {Number} The X coord of the point to test
+     * @param x {Number or Point} The X coord of the point to test (or Point instance)
      * @param y {Number} The Y coord of the point to test
      * @return {Boolean} if the x/y coords are within this ellipse
      */
@@ -78,6 +78,12 @@ this.createjs = this.createjs||{};
     {
         if(this.width <= 0 || this.height <= 0)
             return false;
+
+        if (x.x) {
+          //x is a Point
+          y = x.y;
+          x = x.x;
+        }
 
         //normalize the coords to an ellipse with center 0,0
         //and a radius of 0.5
