@@ -103,7 +103,7 @@ this.createjs = this.createjs||{};
 		var bitmap = new createjs.Bitmap(texture.image);
 		output.addChild(bitmap);
 		bitmap.sourceRect = texture.frame;
-		bitmap.setTransform(texture.offset.x * scale, texture.offset.y * scale);
+		bitmap.setTransform(texture.offset.x * scale, texture.offset.y * scale, scale, scale);
 		//set up a nominal bounds to be kind
 		output.nominalBounds = new createjs.Rectangle(0, 0,
 												texture.width * scale,
