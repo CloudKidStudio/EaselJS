@@ -71,7 +71,7 @@ this.createjs = this.createjs||{};
         if(this.radius <= 0)
             return false;
 
-        if (x.x) {
+        if (x.hasOwnProperty("x")) {
           //x is a Point
           y = x.y;
           x = x.x;

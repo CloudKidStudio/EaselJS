@@ -130,7 +130,7 @@ var p = Rectangle.prototype;
 	 * @return {Boolean} A Boolean indicating if the point is inside this rectangle.
 	 **/
 	p.contains = function(x, y) {
-		if (x.x) {
+		if (x.hasOwnProperty("x")) {
 			//x is a Point
 			y = x.y;
 			x = x.x;

@@ -99,28 +99,16 @@ this.createjs = this.createjs||{};
 	 */
 	BitmapUtils.bitmapFromTexture = function(texture, scale)
 	{
-		/* jshint ignore:start */
-		var newBitmap = function()
-		{
-			createjs.Container.call(this);
-			var child = new createjs.Bitmap(this._image);
-			this.addChild(child);
-			child.sourceRect = this._frameRect;
-			var s = this._scale;
-			child.setTransform(this._frameOffsetX * s, this._frameOffsetY * s, s, s);
-		};
-		/* jshint ignore:end */
-		var p = newBitmap.prototype = new createjs.Container();
-		p._image = texture.image;//give it a reference to the spritesheet
-		p._scale = scale;//tell it what scale to use on the Bitmap to bring it to normal size
-		//save the source rectangle of the sprite
-		p._frameRect = texture.frame;
-		p._frameOffsetX = texture.offset.x;
-		p._frameOffsetY = texture.offset.y;
+		var output = new createjs.Container();
+		var bitmap = new createjs.Bitmap(texture.image);
+		output.addChild(bitmap);
+		bitmap.sourceRect = texture.frame;
+		bitmap.setTransform(texture.offset.x * scale, texture.offset.y * scale);
 		//set up a nominal bounds to be kind
-		p.nominalBounds = new createjs.Rectangle(0, 0,
+		output.nominalBounds = new createjs.Rectangle(0, 0,
 												texture.width * scale,
 												texture.height * scale);
+		return output;
 	};
 
 	/**

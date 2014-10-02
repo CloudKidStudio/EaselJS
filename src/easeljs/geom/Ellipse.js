@@ -79,7 +79,7 @@ this.createjs = this.createjs||{};
         if(this.width <= 0 || this.height <= 0)
             return false;
 
-        if (x.x) {
+        if (x.hasOwnProperty("x")) {
           //x is a Point
           y = x.y;
           x = x.x;
