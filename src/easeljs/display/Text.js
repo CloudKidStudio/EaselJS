@@ -241,12 +241,21 @@ var p = Text.prototype = new createjs.DisplayObject();
 		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
 
 		var col = this.color || "#000";
-		if (this.outline) { ctx.strokeStyle = col; ctx.lineWidth = this.outline*1; }
-		else { ctx.fillStyle = col; }
+		if (this.outline)
+		{
+			ctx.strokeStyle = col;
+			ctx.lineWidth = this.outline*1;
+			ctx.lineJoin = "round";
+		}
+		else
+		{
+			ctx.fillStyle = col;
+		}
 		if(this.stroke && !this.outline)
 		{
 			ctx.lineWidth = this.stroke.width;
 			ctx.strokeStyle = this.stroke.color;
+			ctx.lineJoin = "round";
 		}
 
 		
