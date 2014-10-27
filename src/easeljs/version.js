@@ -19,7 +19,7 @@ this.createjs = this.createjs || {};
 	 * @type String
 	 * @static
 	 **/
-	s.version = /*version*/"0.7.8"; // injected by build process
+	s.version = /*version*/"0.7.9"; // injected by build process
 
 	/**
 	 * The build date for this release in UTC format.
@@ -27,6 +27,6 @@ this.createjs = this.createjs || {};
 	 * @type String
 	 * @static
 	 **/
-	s.buildDate = /*date*/"Tue, 21 Oct 2014 14:23:51 GMT"; // injected by build process
+	s.buildDate = /*date*/"Mon, 27 Oct 2014 21:56:14 GMT"; // injected by build process
 
 })();

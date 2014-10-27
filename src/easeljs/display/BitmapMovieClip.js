@@ -149,6 +149,31 @@ this.createjs = this.createjs||{};
 		}
 	});
 
+	/**
+	 * (Read-Only) The total number of frames in the timeline
+	 * @property totalFrames
+	 * @type Int
+	 * @default 0
+	 * @readOnly
+	 */
+	Object.defineProperty(p, 'totalFrames', {
+		get: function() {
+			return this._frames.length;
+		}
+	});
+
+	/**
+	 * (Read-Only) The Texture of the current frame
+	 * @property currentTexture
+	 * @type createjs.TextureAtlas.Texture
+	 * @readOnly
+	 */
+	Object.defineProperty(p, 'currentTexture', {
+		get: function() {
+			return this._currentTexture;
+		}
+	});
+
 	//==== Private properties =====
 
 	/**
