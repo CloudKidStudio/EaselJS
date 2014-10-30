@@ -99,6 +99,14 @@ this.createjs = this.createjs||{};
 	 */
 	BitmapUtils.bitmapFromTexture = function(texture, scale)
 	{
+		if(scale > 0)
+		{
+			// Do nothing
+		}
+		else
+		{
+			scale = 1;//scale should default to 1
+		}
 		var output = new createjs.Container();
 		var bitmap = new createjs.Bitmap(texture.image);
 		output.addChild(bitmap);
