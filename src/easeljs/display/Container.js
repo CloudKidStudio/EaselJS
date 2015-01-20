@@ -581,16 +581,17 @@ var p = Container.prototype = new createjs.DisplayObject();
 	 * @protected
 	 **/
 	p._getObjectsUnderPoint = function(x, y, arr, mouse, activeListener) {
-		if(this.hitShape)
+		var mtx;
+		activeListener = activeListener || (mouse&&this._hasMouseEventListener());
+		if(this.hitShape && (!mouse || activeListener))
 		{
-			var mtx = this.getConcatenatedMatrix(this._matrix);
+			mtx = this.getConcatenatedMatrix(this._matrix);
 			if (mtx == null) { return this.hitShape.contains(x, y) ? this : null; }
 			mtx.invert();
 			mtx.append(1, 0, 0, 1, x, y);
 			return this.hitShape.contains(mtx.tx, mtx.ty) ? this : null;
 		}		var ctx = createjs.DisplayObject._hitTestContext;
-		var mtx = this._matrix;
-		activeListener = activeListener || (mouse&&this._hasMouseEventListener());
+		mtx = this._matrix;
 
 		// draw children one at a time, and check if we get a hit:
 		var children = this.children;
@@ -599,7 +600,8 @@ var p = Container.prototype = new createjs.DisplayObject();
 			var child = children[i];
 			var hitArea = child.hitArea, mask = child.mask;
 			if (!child.visible || (!hitArea && !child.isVisible()) || (mouse && !child.mouseEnabled)) { continue; }
-			if(child.hitShape)
+
+			if(child.hitShape && (!mouse || activeListener || child._hasMouseEventListener()))
 			{
 				var mtx = child.getConcatenatedMatrix(child._matrix);
 				var result;
