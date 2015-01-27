@@ -1,18 +1,17 @@
 {
 	"easel_source": [
+		"../src/createjs/utils/extend.js",
+		"../src/createjs/utils/promote.js",
+		"../src/createjs/utils/indexOf.js",
 		"../src/createjs/events/Event.js",
 		"../src/createjs/events/EventDispatcher.js",
-		"../src/createjs/utils/IndexOf.js",
+		"../src/createjs/utils/Ticker.js",
 		"../src/easeljs/utils/UID.js",
-		"../src/easeljs/utils/Ticker.js",
 		"../src/easeljs/events/MouseEvent.js",
 		"../src/easeljs/geom/Matrix2D.js",
+		"../src/easeljs/geom/DisplayProps.js",
 		"../src/easeljs/geom/Point.js",
 		"../src/easeljs/geom/Rectangle.js",
-		"../src/easeljs/geom/Circle.js",
-		"../src/easeljs/geom/Sector.js",
-		"../src/easeljs/geom/Ellipse.js",
-		"../src/easeljs/geom/Polygon.js",
 		"../src/easeljs/ui/ButtonHelper.js",
 		"../src/easeljs/display/Shadow.js",
 		"../src/easeljs/display/SpriteSheet.js",
@@ -22,7 +21,6 @@
 		"../src/easeljs/display/Stage.js",
 		"../src/easeljs/display/Bitmap.js",
 		"../src/easeljs/display/Sprite.js",
-		"../src/easeljs/display/BitmapAnimation.js",
 		"../src/easeljs/display/Shape.js",
 		"../src/easeljs/display/Text.js",
 		"../src/easeljs/display/BitmapText.js",
@@ -37,16 +35,23 @@
 		"../src/easeljs/filters/ColorMatrix.js",
 		"../src/easeljs/filters/ColorMatrixFilter.js",
 		"../src/easeljs/ui/Touch.js",
-		"../src/easeljs/utils/BitmapUtils.js",
-		"../src/easeljs/utils/TextureAtlas.js",
 		"../src/easeljs/version.js"
 	],
 
 	"movieclip_source": [
 		"../src/easeljs/display/MovieClip.js",
-		"../src/easeljs/display/BitmapMovieClip.js",
 		"../src/easeljs/version_movieclip.js"
 	],
 
-	"docs_out_path":"./output/EaselJSDocs/"
+	"docs_out_path":"./output/EaselJSDocs/",
+
+	"connect_root": "../",
+
+	"livereload_watch": [
+        "../{examples,extras}/{,*/}*.{png,jpg,jpeg,gif,webp,svg,ogg,mp3,js,css,html}"
+	],
+
+	"watch_exclude_files": [
+		"!../src/easeljs/version*.js"
+	]
 }

@@ -36,8 +36,9 @@ this.createjs = this.createjs||{};
 (function() {
 	"use strict";
 
-// TODO: support for double tap.
-/**
+
+// constructor:
+	/**
  * Global utility for working with multi-touch enabled devices in EaselJS. Currently supports W3C Touch API (iOS and
  * modern Android browser) and the Pointer API (IE), including ms-prefixed events in IE10, and unprefixed in IE11.
  *
@@ -56,11 +57,12 @@ this.createjs = this.createjs||{};
  * @class Touch
  * @static
  **/
-var Touch = function() {
-	throw "Touch cannot be instantiated";
-};
+	function Touch() {
+		throw "Touch cannot be instantiated";
+	}
 
-// Public static methods:
+
+// public static methods:
 	/**
 	 * Returns `true` if touch is supported in the current browser.
 	 * @method isSupported
@@ -68,9 +70,9 @@ var Touch = function() {
 	 * @static
 	 **/
 	Touch.isSupported = function() {
-		return	('ontouchstart' in window) // iOS
+		return	!!(('ontouchstart' in window) // iOS & Android
 			|| (window.navigator['msPointerEnabled'] && window.navigator['msMaxTouchPoints'] > 0) // IE10
-			|| (window.navigator['pointerEnabled'] && window.navigator['maxTouchPoints'] > 0); // IE11+
+			|| (window.navigator['pointerEnabled'] && window.navigator['maxTouchPoints'] > 0)); // IE11+
 	};
 
 	/**
@@ -89,6 +91,7 @@ var Touch = function() {
 	 **/
 	Touch.enable = function(stage, singleTouch, allowDefault) {
 		if (!stage || !stage.canvas || !Touch.isSupported()) { return false; }
+		if (stage.__touch) { return true; }
 
 		// inject required properties on stage:
 		stage.__touch = {pointers:{}, multitouch:!singleTouch, preventDefault:!allowDefault, count:0};
@@ -107,13 +110,15 @@ var Touch = function() {
 	 * @static
 	 **/
 	Touch.disable = function(stage) {
-		if (!stage || !stage.__touch) { return; }
+		if (!stage) { return; }
 		if ('ontouchstart' in window) { Touch._IOS_disable(stage); }
 		else if (window.navigator['msPointerEnabled'] || window.navigator["pointerEnabled"]) { Touch._IE_disable(stage); }
+		
+		delete stage.__touch;
 	};
 
-// Private static methods:
 
+// Private static methods:
 	/**
 	 * @method _IOS_enable
 	 * @protected
@@ -122,7 +127,7 @@ var Touch = function() {
 	 **/
 	Touch._IOS_enable = function(stage) {
 		var canvas = stage.canvas;
-		var f = stage.__touch.f = function(e,external) { Touch._IOS_handleEvent(stage,e,external); };
+		var f = stage.__touch.f = function(e) { Touch._IOS_handleEvent(stage,e); };
 		canvas.addEventListener("touchstart", f, false);
 		canvas.addEventListener("touchmove", f, false);
 		canvas.addEventListener("touchend", f, false);
@@ -152,17 +157,16 @@ var Touch = function() {
 	 * @protected
 	 * @static
 	 **/
-	Touch._IOS_handleEvent = function(stage, e, external) {
+	Touch._IOS_handleEvent = function(stage, e) {
 		if (!stage) { return; }
 		if (stage.__touch.preventDefault) { e.preventDefault&&e.preventDefault(); }
-		
 		var touches = e.changedTouches;
 		var type = e.type;
 		for (var i= 0,l=touches.length; i<l; i++) {
 			var touch = touches[i];
 			var id = touch.identifier;
-			if (!external && touch.target != stage.canvas) { continue; }
-			
+			if (touch.target != stage.canvas) { continue; }
+
 			if (type == "touchstart") {
 				this._handleStart(stage, id, e, touch.pageX, touch.pageY);
 			} else if (type == "touchmove") {
@@ -181,7 +185,7 @@ var Touch = function() {
 	 **/
 	Touch._IE_enable = function(stage) {
 		var canvas = stage.canvas;
-		var f = stage.__touch.f = function(e,external) { Touch._IE_handleEvent(stage,e,external); };
+		var f = stage.__touch.f = function(e) { Touch._IE_handleEvent(stage,e); };
 
 		if (window.navigator["pointerEnabled"] === undefined) {
 			canvas.addEventListener("MSPointerDown", f, false);
@@ -233,15 +237,15 @@ var Touch = function() {
 	 * @protected
 	 * @static
 	 **/
-	Touch._IE_handleEvent = function(stage, e, external) {
+	Touch._IE_handleEvent = function(stage, e) {
 		if (!stage) { return; }
 		if (stage.__touch.preventDefault) { e.preventDefault && e.preventDefault(); }
 		var type = e.type;
 		var id = e.pointerId;
 		var ids = stage.__touch.activeIDs;
-		
+
 		if (type == "MSPointerDown" || type == "pointerdown") {
-			if (!external && e.srcElement != stage.canvas) { return; }
+			if (e.srcElement != stage.canvas) { return; }
 			ids[id] = true;
 			this._handleStart(stage, id, e, e.pageX, e.pageY);
 		} else if (ids[id]) { // it's an id we're watching
@@ -255,7 +259,6 @@ var Touch = function() {
 		}
 	};
 
-
 	/**
 	 * @method _handleStart
 	 * @param {Stage} stage
@@ -266,7 +269,6 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleStart = function(stage, id, e, x, y) {
-		e.preventDefault();
 		var props = stage.__touch;
 		if (!props.multitouch && props.count) { return; }
 		var ids = props.pointers;
@@ -286,7 +288,6 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleMove = function(stage, id, e, x, y) {
-		e.preventDefault();
 		if (!stage.__touch.pointers[id]) { return; }
 		stage._handlePointerMove(id, e, x, y);
 	};
@@ -299,7 +300,6 @@ var Touch = function() {
 	 * @protected
 	 **/
 	Touch._handleEnd = function(stage, id, e) {
-		e.preventDefault();
 		// TODO: cancel should be handled differently for proper UI (ex. an up would trigger a click, a cancel would more closely resemble an out).
 		var props = stage.__touch;
 		var ids = props.pointers;
@@ -310,5 +310,5 @@ var Touch = function() {
 	};
 
 
-createjs.Touch = Touch;
+	createjs.Touch = Touch;
 }());

@@ -1,38 +1,38 @@
 # EaselJS
 
-EaselJS is a library to make working with the Canvas element easier. It provides a display list to allow you to work with display elements on a canvas as nested objects. It also provides a simple framework for providing shape based mouse interactions on elements in the display list. This is useful for games, generative art, and other highly graphical experiences.
+EaselJS is a library for building high-performance interactive 2D content in HTML5. It provides a feature-rich display list to allow you to manipulate and animate graphics. It also provides a robust interactive model for mouse and touch interactions.
+
+It is excellent for building games, generative art, ads, data visualization, and other highly graphical experiences. It works well alone, or with the rest of the [CreateJS](http://createjs.com/) suite: [SoundJS](http://createjs.com/SoundJS), [PreloadJS](http://createjs.com/PreloadJS), and [TweenJS](http://createjs.com/TweenJS).
+
+It has no external dependencies, and should be compatible with virtually any framework you enjoy using.
 
 ## Simple Example
 
 	//Draw a square on screen.
-	var canvas = document.getElementById('canvas');
-	var stage = new createjs.Stage(canvas);
+	var stage = new createjs.Stage('myCanvas');
 	var shape = new createjs.Shape();
-	shape.graphics.beginFill('rgba(255,0,0,1)').drawRoundRect(0, 0, 120, 120, 10);
+	shape.graphics.beginFill('red').drawRect(0, 0, 120, 120);
 	stage.addChild(shape);
 	stage.update();
 
-## Animation Example
+## Sprite Animation Example
 	var ss = new createjs.SpriteSheet({
-		"frames": {
-			"width": 200,
-			"numFrames": 64,
-			"regX": 2,
-			"regY": 2,
-			"height": 361
+		frames: {
+			width: 32,
+			height: 64,
+			numFrames: 19
 		},
-		"animations": {"jump": [26, 63], "run": [0, 25]},
-		"images": ["./assets/runningGrant.png"]
+		animations: {run: [0, 25], jump: [26, 63, "run"]},
+		images: ["./assets/runningGrant.png"]
 	});
-	
-	ss.getAnimation("run").speed = 2;
-	ss.getAnimation("run").next = "jump";
-	ss.getAnimation("jump").next = "run";
 	
 	var sprite = new createjs.Sprite(ss, "run");
 	sprite.scaleY = sprite.scaleX = 0.4;
+	stage.addChild(sprite);
 	
-	createjs.Ticker.setFPS(60);
+	sprite.on("click", function() { sprite.gotoAndPlay("jump"); });
+	
+	createjs.Ticker.on("tick", stage);
 	createjs.Ticker.addEventListener("tick", stage);
 	stage.addChild(sprite);
 
@@ -50,7 +50,7 @@ can use it for almost any purpose (including commercial projects). We appreciate
 
 ## Classes
 
-The API is inspired by Flash's display list, and should be easy to pick up for both JS and AS3 developers. Check out the [docs](http://createjs.com/Docs/EaselJS/) for more information.
+The API is inspired in part by Flash's display list, and should be easy to pick up for both JS and AS3 developers. Check out the [docs](http://createjs.com/Docs/EaselJS/) for more information.
 
 **DisplayObject**
 Abstract base class for all display elements in EaselJS. Exposes all of the display properties (ex. x, y, rotation, scaleX, scaleY, skewX, skewY, alpha, shadow, etc) that are common to all display objects.

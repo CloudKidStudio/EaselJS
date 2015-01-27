@@ -1,11 +1,60 @@
-Version NEXT [Not Released]
+Version NEXT [not yet released]
+****************************************************************************************************
+CRITICAL (may break existing content):
+- Graphics.command now returns null after empty fill / stroke calls.
+
+*****
+OTHER:
+- added Graphics.StrokeDash and Graphics.setStrokeDash()
+- Graphics no longer appends redundant StrokeStyle commands
+
+
+
+Version 0.8.0 [December 12, 2014]
 ****************************************************************************************************
 CRITICAL (may break existing content):
 - modified behaviour of SpriteSheetBuilder.addFrame setupFunction, setupParams & setupScope params
 - removed the deprecated mousemove & mouseup events on MouseEvent
+- removed Graphics.inject() in favour of Graphics.append()
+- Sprite now properly displays the first frame of animations after calling gotoAndPlay() (thanks MannyC)
+- Moved Ticker into the "createjs" package since it will be included with TweenJS in future releases.
+- re-architected the class and inheritance model
+	- initialize methods removed, use MySuperClass_constructor instead
+	- helper methods: extend & promote (see the "Utility Methods" docs)
+	- property definitions are now instance level, and in the constructor (performance gains)
+	- the .constructor is now set correctly on all classes (thanks kaesve)
+- renamed initialize on geom classes to "setValues()"
+- removed secondary properties (visible, alpha, compositeOperation, shadow) and related functionality from Matrix2D
+	- added DisplayProps to hold these properties + a matrix instance
+- Matrix2D was updated to be internally consistent with regards to matrix orientation
+	- Matrix2D transform methods (ex. translate, rotate) now behave as append instead of prepend operations
+- renamed ColorMatrix.copyMatrix() to .copy() to reflect geom classes
+
+*****
+DEPRECATED (will be removed in a future version):
+- Container.getNumChildren() in favour of Container.numChildren
+- DisplayObject.getStage() in favour of DisplayObject.stage
+- Graphics.getInstructions() in favour of Graphics.instructions
+- MovieClip.getLabels() in favour of MovieClip.labels
+- MovieClip.getCurrentLabel() in favour of MovieClip.currentLabel
+- SpriteSheet.getAnimations() in favour of SpriteSheet.animations
+- Ticker.getInterval() in favour of Ticker.interval
+- Ticker.getFPS() in favour of Ticker.framerate
+- Ticker.getPaused() / setPaused() in favour of Ticker.paused
+
+***********
+PERFORMANCE:
+- added performance tests to extras
+- significant performance improvements:
+	- vector graphics (especially in Graphics instances with large numbers of instructions)
+	- filters (thanks pfirpfel & quasimondo) (~2-4x faster)
+	- overall display list performance (~2x faster)
+	- display object property access (~2x faster)
+	- tick event propagation (~3x faster)
 
 *****
 OTHER:
+- replaced a number of get/set methods with getter / setters. See the DEPRECATED section above for a list.
 - added setupFunction, setupData, labelFunction to SpriteSheetBuilder.addMovieClip
 - added SpriteStage & SpriteContainer for WebGL rendering
 - changes to how BitmapText works to support WebGL
@@ -17,11 +66,41 @@ OTHER:
 - fixed issue introduced in 0.7.1 where getObjectsUnderPoint ignore elements without mouse listeners
 - doc updates
 - fixed example formatting in docs
-- display object tick events will now include delta, time, paused, and runTime properties if a tick event object is passed as the first param to Stage.update()
+- simplified handling of custom data passed into Stage.update()
+- display object tick events will now include delta, time, paused, and runTime properties if a Ticker tick event object is passed as the first param to Stage.update()
 - added Stage.tick()
 - added Event.set()
+- added MovieClip.framerate and support for time based movieclips
 - Added Bower support, including grunt task for automatically updating bower.json
+- fixed an issue with Ticker.reset()
+- Ticker.getTime()/getEventTime() now return -1 if the Ticker has not been initialized
+- preventDefault support added to the tickstart and drawstart events
+- added Stage.drawRect to support selective rendering
+- major rewrite of Graphics to use specific command objects
+- added Graphics.getInstructions()
+- added Text.getMetrics()
+- fix for Text.getMeasuredWidth() when no font or an invalid font is specified
+- fix for spritesheets that included 0 width/height frames
+- the CreateJS CDN now supports https / SSL
+- improved how Sprite handles sequencing between animations with different speed values
+- added "change" event to Sprite
+- added "added" and "removed" events to DisplayObject
+- added the extras folder, with: SVGExport, Context2DLog, and PerformanceTests
+- added Graphics.store() / unstore()
+- examples now all use the combined lib
+- SpriteSheet.getNumFrames() now returns 0 instead of null if images are not loaded.
+- added some initial unit tests for the library
+- added helper methods to Rectangle: union, intersects, extend, intersection, pad, isEmpty, & contains.
+- updated clone() method for all classes
+- added Matrix2D.equals() method
+- added DisplayObject.transformMatrix
 - mouse interactions and getObjectsUnderPoint now respect masks
+- added a mode param to getObjectsUnderPoint() to respect mouseEnabled/mouseChildren and event listeners
+- added Stage.preventSelection to block accidental selection of document elements
+- added `pt` param to DisplayObject.localToGlobal, globalToLocal, and localToLocal methods
+- BlurFilter provides higher quality results (thanks quasimondo)
+- added MouseEvent.isTouch
+- added support for margin and spacing in sprite sheet data (thanks renatopp)
 
 
 Version 0.7.1 [December 12, 2013]
@@ -120,7 +199,7 @@ OTHER:
 - improved BlurFilter performance and results (thanks to Mario Klingemann)
 - objects added to a MovieClip via addChild will now display over objects managed by the MovieClip
 - Fixed clone on AlphaMapFilter
-- Updated the build process to use NodeJS & Grunt.js. Please refer to the readme in the build folder.
+- Updated the build process to use NodeJS & Grunt.js. Please refer to the README in the build folder.
 
 
 Version 0.6.1 [May 14, 2013]

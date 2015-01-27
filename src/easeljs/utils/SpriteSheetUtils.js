@@ -35,26 +35,29 @@ this.createjs = this.createjs||{};
 
 (function() {
 	"use strict";
+	
+	
 // constructor:
-/**
- * The SpriteSheetUtils class is a collection of static methods for working with {{#crossLink "SpriteSheet"}}{{/crossLink}}s.
- * A sprite sheet is a series of images (usually animation frames) combined into a single image on a regular grid. For
- * example, an animation consisting of 8 100x100 images could be combined into a 400x200 sprite sheet (4 frames across
- * by 2 high). The SpriteSheetUtils class uses a static interface and should not be instantiated.
- * @class SpriteSheetUtils
- * @static
- **/
-var SpriteSheetUtils = function() {
-	throw "SpriteSheetUtils cannot be instantiated";
-};
+	/**
+	 * The SpriteSheetUtils class is a collection of static methods for working with {{#crossLink "SpriteSheet"}}{{/crossLink}}s.
+	 * A sprite sheet is a series of images (usually animation frames) combined into a single image on a regular grid. For
+	 * example, an animation consisting of 8 100x100 images could be combined into a 400x200 sprite sheet (4 frames across
+	 * by 2 high). The SpriteSheetUtils class uses a static interface and should not be instantiated.
+	 * @class SpriteSheetUtils
+	 * @static
+	 **/
+	function SpriteSheetUtils() {
+		throw "SpriteSheetUtils cannot be instantiated";
+	}
 
+
+// private static properties:
 	/**
 	 * @property _workingCanvas
 	 * @static
 	 * @type HTMLCanvasElement | Object
 	 * @protected
 	*/
-	
 	/**
 	 * @property _workingContext
 	 * @static
@@ -68,7 +71,6 @@ var SpriteSheetUtils = function() {
 		canvas.width = canvas.height = 1;
 	}
 
-	
 
 // public static methods:
 	/**
@@ -113,10 +115,10 @@ var SpriteSheetUtils = function() {
 	 * The extractFrame method may cause cross-domain warnings since it accesses pixels directly on the canvas.
 	 * @method extractFrame
 	 * @static
-	 * @param {Image} spriteSheet The SpriteSheet instance to extract a frame from.
+	 * @param {SpriteSheet} spriteSheet The SpriteSheet instance to extract a frame from.
 	 * @param {Number|String} frameOrAnimation The frame number or animation name to extract. If an animation
 	 * name is specified, only the first frame of the animation will be extracted.
-	 * @return {Image} a single frame of the specified sprite sheet as a new PNG image.
+	 * @return {HTMLImageElement} a single frame of the specified sprite sheet as a new PNG image.
 	*/
 	SpriteSheetUtils.extractFrame = function(spriteSheet, frameOrAnimation) {
 		if (isNaN(frameOrAnimation)) {
@@ -141,10 +143,10 @@ var SpriteSheetUtils = function() {
 	 * versus a single RGBA PNG32. This method is very fast (generally on the order of 1-2 ms to run).
 	 * @method mergeAlpha
 	 * @static
-	 * @param {Image} rbgImage The image (or canvas) containing the RGB channels to use.
-	 * @param {Image} alphaImage The image (or canvas) containing the alpha channel to use.
-	 * @param {Canvas} canvas Optional. If specified, this canvas will be used and returned. If not, a new canvas will be created.
-	 * @return {Canvas} A canvas with the combined image data. This can be used as a source for Bitmap or SpriteSheet.
+	 * @param {HTMLImageElement} rbgImage The image (or canvas) containing the RGB channels to use.
+	 * @param {HTMLImageElement} alphaImage The image (or canvas) containing the alpha channel to use.
+	 * @param {HTMLCanvasElement} canvas Optional. If specified, this canvas will be used and returned. If not, a new canvas will be created.
+	 * @return {HTMLCanvasElement} A canvas with the combined image data. This can be used as a source for Bitmap or SpriteSheet.
 	 * @deprecated Tools such as ImageAlpha generally provide better results. This will be moved to sandbox in the future.
 	*/
 	SpriteSheetUtils.mergeAlpha = function(rgbImage, alphaImage, canvas) {
@@ -222,5 +224,5 @@ var SpriteSheetUtils = function() {
 	};
 
 
-createjs.SpriteSheetUtils = SpriteSheetUtils;
+	createjs.SpriteSheetUtils = SpriteSheetUtils;
 }());

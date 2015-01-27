@@ -1,13 +1,9 @@
 .DS_Store
-
-#ignore .git folder for yuidoc project, otherwise it will be treated as a submodule
-build/tools/yuidoc/.git/*
-
-#ignore compiled python files
-*.pyc
-
 build/output/
 build/tmp/
+tests/_SpecRunner.html
+tests/.grunt/
+docs/**/
 *TMP*
 node_modules/
 .idea/
@@ -15,10 +11,10 @@ node_modules/
 *.sublime-workspace
 config.local.json
 
-#-----------------------------
-# INVALID FILES
-# (for cross OS compatibility)
-#-----------------------------
 *[\<\>\:\"\/\\\|\?\*]*
+npm-debug.log
+build/.sass-cache
+main.css
+
 
 build/npm-debug.log
