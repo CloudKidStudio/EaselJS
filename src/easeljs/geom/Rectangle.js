@@ -99,7 +99,7 @@ this.createjs = this.createjs||{};
 
 
 // public methods:
-	/** 
+	/**
 	 * Sets the specified values on this instance.
 	 * @method setValues
 	 * @param {Number} [x=0] X position.
@@ -118,7 +118,7 @@ this.createjs = this.createjs||{};
 		return this;
 	};
 	
-	/** 
+	/**
 	 * Extends the rectangle's bounds to include the described point or rectangle.
 	 * @method extend
 	 * @param {Number} x X position of the point or rectangle.
@@ -138,7 +138,7 @@ this.createjs = this.createjs||{};
 		return this;
 	};
 	
-	/** 
+	/**
 	 * Adds the specified padding to the rectangle's bounds.
 	 * @method extend
 	 * @param {Number} [top=0]
@@ -167,22 +167,29 @@ this.createjs = this.createjs||{};
 		return this.setValues(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 	};
 	
-	/** 
+	/**
 	 * Returns true if this rectangle fully encloses the described point or rectangle.
 	 * @method contains
-	 * @param {Number} x X position of the point or rectangle.
+	 * @param {Number|Point|Rectangle} x X position of the point or rectangle, or a Point or Rectangle.
 	 * @param {Number} y Y position of the point or rectangle.
 	 * @param {Number} [width=0] The width of the rectangle.
 	 * @param {Number} [height=0] The height of the rectangle.
 	 * @return {Boolean} True if the described point or rectangle is contained within this rectangle.
 	*/
 	p.contains = function(x, y, width, height) {
+		if(x.hasOwnProperty("x"))
+		{
+			y = x.y;
+			width = x.width;
+			height = x.height;
+			x = x.x;
+		}
 		width = width||0;
 		height = height||0;
 		return (x >= this.x && x+width <= this.x+this.width && y >= this.y && y+height <= this.y+this.height);
 	};
 	
-	/** 
+	/**
 	 * Returns a new rectangle which contains this rectangle and the specified rectangle.
 	 * @method union
 	 * @param {Rectangle} rect The rectangle to calculate a union with.
@@ -192,7 +199,7 @@ this.createjs = this.createjs||{};
 		return this.clone().extend(rect.x, rect.y, rect.width, rect.height);
 	};
 	
-	/** 
+	/**
 	 * Returns a new rectangle which describes the intersection (overlap) of this rectangle and the specified rectangle,
 	 * or null if they do not intersect.
 	 * @method intersection
@@ -208,7 +215,7 @@ this.createjs = this.createjs||{};
 		return (x2 <= x1 || y2 <= y1) ? null : new Rectangle(x1, y1, x2-x1, y2-y1);
 	};
 	
-	/** 
+	/**
 	 * Returns true if the specified rectangle intersects (has any overlap) with this rectangle.
 	 * @method intersects
 	 * @param {Rectangle} rect The rectangle to compare.
@@ -218,7 +225,7 @@ this.createjs = this.createjs||{};
 		return (rect.x <= this.x+this.width && this.x <= rect.x+rect.width && rect.y <= this.y+this.height && this.y <= rect.y + rect.height);
 	};
 	
-	/** 
+	/**
 	 * Returns true if the width or height are equal or less than 0.
 	 * @method isEmpty
 	 * @return {Boolean} True if the rectangle is empty.

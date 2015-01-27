@@ -51,7 +51,7 @@ this.createjs = this.createjs||{};
          * @default 0
          */
         this.height = height || 0;
-    }
+    };
 
     var p = Ellipse.prototype;
 
@@ -64,7 +64,7 @@ this.createjs = this.createjs||{};
     p.clone = function()
     {
         return new Ellipse(this.x, this.y, this.width, this.height);
-    }
+    };
 
     /**
      * Checks if the x, and y coords passed to this function are contained within this ellipse
@@ -94,15 +94,15 @@ this.createjs = this.createjs||{};
         normy *= normy;
 
         return (normx + normy < 0.25);
-    }
+    };
 
     p.getBounds = function()
     {
         return new createjs.Rectangle(this.x, this.y, this.width, this.height);
-    }
+    };
 
     // constructor
-    p.constructor = Ellipse;
+    Ellipse.constructor = Ellipse;
 
     createjs.Ellipse = Ellipse;
 }());

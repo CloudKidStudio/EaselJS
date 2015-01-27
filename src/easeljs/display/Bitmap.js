@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -131,6 +131,9 @@ this.createjs = this.createjs||{};
 		if (this.DisplayObject_draw(ctx, ignoreCache) || !this.image) { return true; }
 		var img = this.image, rect = this.sourceRect;
 		if (rect) {
+			//safe quit if we aren't drawing any actual pixels, since browsers might not like that
+			if(rect.width < 1 || rect.height < 1)
+				return true;
 			// some browsers choke on out of bound values, so we'll fix them:
 			var x1 = rect.x, y1 = rect.y, x2 = x1 + rect.width, y2 = y1 + rect.height, x = 0, y = 0, w = img.width, h = img.height;
 			if (x1 < 0) { x -= x1; x1 = 0; }

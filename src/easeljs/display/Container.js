@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -302,13 +302,18 @@ this.createjs = this.createjs||{};
 	 *
 	 * <h4>Example</h4>
 	 *
-	 *      container.removeAlLChildren();
+	 *      container.removeAllChildren();
 	 *
 	 * @method removeAllChildren
+	 * @param {Boolean} [recurse=false] If children should be removed recursively to ensure cleanup.
 	 **/
-	p.removeAllChildren = function() {
+	p.removeAllChildren = function(recurse) {
 		var kids = this.children;
-		while (kids.length) { this.removeChildAt(0); }
+		while (kids.length) {
+			if(recurse && kids[0].removeAllChildren)
+				kids[0].removeAllChildren(true);
+			this.removeChildAt(0);
+		}
 	};
 
 	/**
@@ -344,7 +349,7 @@ this.createjs = this.createjs||{};
 	 * Performs an array sort operation on the child list.
 	 *
 	 * <h4>Example: Display children with a higher y in front.</h4>
-	 * 
+	 *
 	 *      var sortFunction = function(obj1, obj2, options) {
 	 *          if (obj1.y > obj2.y) { return 1; }
 	 *          if (obj1.y < obj2.y) { return -1; }
@@ -413,7 +418,7 @@ this.createjs = this.createjs||{};
 	/**
 	 * Changes the depth of the specified child. Fails silently if the child is not a child of this container, or the index is out of range.
 	 * @param {DisplayObject} child
-	 * @param {Number} index  
+	 * @param {Number} index
 	 * @method setChildIndex
 	 **/
 	p.setChildIndex = function(child, index) {
@@ -464,7 +469,7 @@ this.createjs = this.createjs||{};
 	 * This uses shape based hit detection, and can be an expensive operation to run, so it is best to use it carefully.
 	 * For example, if testing for objects under the mouse, test on tick (instead of on {{#crossLink "DisplayObject/mousemove:event"}}{{/crossLink}}),
 	 * and only if the mouse's position has changed.
-	 * 
+	 *
 	 * <ul>
 	 *     <li>By default (mode=0) this method evaluates all display objects.</li>
 	 *     <li>By setting the `mode` parameter to `1`, the {{#crossLink "DisplayObject/mouseEnabled:property"}}{{/crossLink}}
@@ -474,7 +479,7 @@ this.createjs = this.createjs||{};
 	 * 	   	that would normally intercept mouse interaction will be included. This can significantly improve performance
 	 * 	   	in some cases by reducing the number of display objects that need to be tested.</li>
 	 * </li>
-	 * 
+	 *
 	 * This method accounts for both {{#crossLink "DisplayObject/hitArea:property"}}{{/crossLink}} and {{#crossLink "DisplayObject/mask:property"}}{{/crossLink}}.
 	 * @method getObjectsUnderPoint
 	 * @param {Number} x The x position in the container to test.
@@ -591,6 +596,16 @@ this.createjs = this.createjs||{};
 		if (!currentDepth && !this._testMask(this, x, y)) { return null; }
 		var mtx, ctx = createjs.DisplayObject._hitTestContext;
 		activeListener = activeListener || (mouse&&this._hasMouseEventListener());
+		
+		//if this Container has a hitShape defined, use that instead of checking children.
+		if(this.hitShape && (!mouse || activeListener))
+		{
+			mtx = this.getConcatenatedMatrix(this._matrix);
+			if (mtx == null) { return this.hitShape.contains(x, y) ? this : null; }
+			mtx.invert();
+			mtx.append(1, 0, 0, 1, x, y);
+			return this.hitShape.contains(mtx.tx, mtx.ty) ? this : null;
+		}
 
 		// draw children one at a time, and check if we get a hit:
 		var children = this.children, l = children.length;
@@ -598,11 +613,35 @@ this.createjs = this.createjs||{};
 			var child = children[i];
 			var hitArea = child.hitArea;
 			if (!child.visible || (!hitArea && !child.isVisible()) || (mouse && !child.mouseEnabled)) { continue; }
+			
 			if (!hitArea && !this._testMask(child, x, y)) { continue; }
+			
+			var result;
+			//If the child has a hitShape defined, use that for hit testing instead of drawing
+			if(child.hitShape && (!mouse || activeListener || child._hasMouseEventListener()))
+			{
+				mtx = child.getConcatenatedMatrix(child._matrix);
+				if (mtx == null) {
+					result = child.hitShape.contains(x, y);
+				}
+				else {
+					mtx.invert();
+					mtx.append(1, 0, 0, 1, x, y);
+					result = child.hitShape.contains(mtx.tx, mtx.ty);
+				}
+				if(result)
+				{
+					if (activeListener) { return this; }
+					else if (arr) { arr.push(child); }
+					else { return child; }
+				}
+				else
+					continue;
+			}
 			
 			// if a child container has a hitArea then we only need to check its hitArea, so we can treat it as a normal DO:
 			if (!hitArea && child instanceof Container) {
-				var result = child._getObjectsUnderPoint(x, y, arr, mouse, activeListener, currentDepth+1);
+				result = child._getObjectsUnderPoint(x, y, arr, mouse, activeListener, currentDepth+1);
 				if (!arr && result) { return (mouse && !this.mouseChildren) ? this : result; }
 			} else {
 				if (mouse && !activeListener && !child._hasMouseEventListener()) { continue; }

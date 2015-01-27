@@ -192,24 +192,6 @@ this.createjs = this.createjs||{};
 		 */
 		this.frameBounds = this.frameBounds||null; // TODO: Deprecated. This is for backwards support of FlashCC
 		
-		/**
-		 * By default MovieClip instances advance one frame per tick. Specifying a framerate for the MovieClip
-		 * will cause it to advance based on elapsed time between ticks as appropriate to maintain the target
-		 * framerate.
-		 *
-		 * For example, if a MovieClip with a framerate of 10 is placed on a Stage being updated at 40fps, then the MovieClip will
-		 * advance roughly one frame every 4 ticks. This will not be exact, because the time between each tick will
-		 * vary slightly between frames.
-		 *
-		 * This feature is dependent on the tick event object (or an object with an appropriate "delta" property) being
-		 * passed into {{#crossLink "Stage/update"}}{{/crossLink}}.
-		 * @property framerate
-		 * @type {Number}
-		 * @default 0
-		 **/
-		this.framerate = null;
-		
-		
 	// private properties:
 		/**
 		 * @property _synchOffset
@@ -236,12 +218,33 @@ this.createjs = this.createjs||{};
 		this._prevPosition = 0;
 	
 		/**
-		 * The time remaining from the previous tick, only applicable when .framerate is set.
-		 * @property _t
-		 * @type Number
-		 * @private
-		 */
+		* Note - changed from default: When the MovieClip is framerate independent, this is the time
+		* elapsed from frame 0 in seconds.
+		* @property _t
+		* @type Number
+		* @default 0
+		* @private
+		*/
 		this._t = 0;
+		
+		/**
+		* By default MovieClip instances advance one frame per tick. Specifying a framerate for the MovieClip
+		* will cause it to advance based on elapsed time between ticks as appropriate to maintain the target
+		* framerate.
+		*
+		* @property _framerate
+		* @type {Number}
+		* @default 0
+		**/
+		this._framerate = 0;
+		/**
+		* When the MovieClip is framerate independent, this is the total time in seconds for the animation.
+		* @property _duration
+		* @type Number
+		* @default 0
+		* @private
+		*/
+		this._duration = 0;
 	
 		/**
 		 * List of display objects that are actively being managed by the MovieClip.
@@ -344,6 +347,52 @@ this.createjs = this.createjs||{};
 			currentLabel: { get: p.getCurrentLabel }
 		});
 	} catch (e) {}
+	
+	/**
+	* When the MovieClip is framerate independent, this is the time elapsed from frame 0 in seconds.
+	* @property elapsedTime
+	* @type Number
+	* @default 0
+	* @public
+	*/
+	Object.defineProperty(p, 'elapsedTime', {
+		get: function() {
+			return this._t;
+		},
+		set: function(value) {
+			this._t = value;
+		}
+	});
+	
+	/**
+	* By default MovieClip instances advance one frame per tick. Specifying a framerate for the MovieClip
+	* will cause it to advance based on elapsed time between ticks as appropriate to maintain the target
+	* framerate.
+	*
+	* For example, if a MovieClip with a framerate of 10 is placed on a Stage being updated at 40fps, then the MovieClip will
+	* advance roughly one frame every 4 ticks. This will not be exact, because the time between each tick will
+	* vary slightly between frames.
+	*
+	* This feature is dependent on the tick event object (or an object with an appropriate "delta" property) being
+	* passed into {{#crossLink "Stage/update"}}{{/crossLink}}.
+	* @property framerate
+	* @type {Number}
+	* @default 0
+	**/
+	Object.defineProperty(p, 'framerate', {
+		get: function() {
+			return this._framerate;
+		},
+		set: function(value) {
+			if(value > 0)
+			{
+				this._framerate = value;
+				this._duration = value ? this.timeline.duration / value : 0;
+			}
+			else
+				this._framerate = this._duration = 0;
+		}
+	});
 
 
 // public methods:
@@ -431,12 +480,36 @@ this.createjs = this.createjs||{};
 		var independent = MovieClip.INDEPENDENT;
 		if (this.mode != independent) { return; }
 		
-		var o=this, fps = o.framerate;
-		while ((o = o.parent) && fps == null) {
-			if (o.mode == independent) { fps = o._framerate; }
+		if(!this._framerate)
+		{
+			var o=this, fps = o.framerate;
+			while ((o = o.parent) && fps == null) {
+				if (o.mode == independent) { fps = o._framerate; }
+			}
+			this._framerate = fps;
 		}
-		this._framerate = fps;
 		
+		//SpringRoll replacement, using an elapsed time from the beginning of the timeline
+		//to allow greater control over playback, like syncing the animation to audio.
+		if(!this.paused)
+		{
+			if(fps > 0)
+			{
+				if(time)
+					this._t += time * 0.001;//milliseconds -> seconds
+				if(this._t > this._duration)
+					this._t = this.timeline.loop ? this._t - this._duration : this._duration;
+				this._prevPosition = Math.floor(this._t * this._framerate);
+				if(this._prevPosition > this.timeline.duration)
+					this._prevPosition = this.timeline.duration;
+			}
+			else
+				this._prevPosition = (this._prevPos < 0) ? 0 : this._prevPosition+1;
+			this._updateTimeline();
+		}
+		//end SpringRoll replacement
+		
+		/*
 		var t = (fps != null && fps != -1 && time != null) ? time/(1000/fps) + this._t : 1;
 		var frames = t|0;
 		this._t = t-frames; // leftover time
@@ -445,6 +518,7 @@ this.createjs = this.createjs||{};
 			this._prevPosition = (this._prevPos < 0) ? 0 : this._prevPosition+1;
 			this._updateTimeline();
 		}
+		*/
 	};
 	
 	/**
@@ -489,7 +563,11 @@ this.createjs = this.createjs||{};
 		// prevent _updateTimeline from overwriting the new position because of a reset:
 		if (this._prevPos == -1) { this._prevPos = NaN; }
 		this._prevPosition = pos;
-		this._t = 0;
+		//update the elapsed time if a time based movieclip
+		if(this._framerate > 0)
+			this._t = pos / this._framerate;
+		else
+			this._t = 0;
 		this._updateTimeline();
 	};
 	

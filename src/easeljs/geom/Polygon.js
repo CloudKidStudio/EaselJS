@@ -40,7 +40,7 @@ this.createjs = this.createjs||{};
         }
 
     	this.points = points;
-    }
+    };
     var p = Polygon.prototype;
 
     /**
@@ -57,7 +57,7 @@ this.createjs = this.createjs||{};
     	}
 
     	return new Polygon(points);
-    }
+    };
 
     /**
      * Checks if the x, and y coords passed to this function are contained within this polygon
@@ -90,10 +90,10 @@ this.createjs = this.createjs||{};
         }
 
         return inside;
-    }
+    };
 
     // constructor
-    p.constructor = Polygon;
+    Polygon.constructor = Polygon;
 
     createjs.Polygon = Polygon;
 }());

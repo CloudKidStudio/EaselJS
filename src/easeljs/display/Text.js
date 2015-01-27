@@ -129,6 +129,14 @@ this.createjs = this.createjs||{};
 		 * @type Number
 		 **/
 		this.outline = 0;
+		
+		/**
+		* The optional style for a stroke. This should have 'width' and 'color' properties to describe the stroke.
+		* Text is only stroked if outline is 0.
+		* @property stroke
+		* @type Object
+		**/
+		this.stroke = null;
 	
 		/**
 		 * Indicates the line height (vertical distance between baselines) for multi-line text. If null or 0,
@@ -209,8 +217,24 @@ this.createjs = this.createjs||{};
 		if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
 
 		var col = this.color || "#000";
-		if (this.outline) { ctx.strokeStyle = col; ctx.lineWidth = this.outline*1; }
-		else { ctx.fillStyle = col; }
+		if (this.outline)
+		{
+			ctx.strokeStyle = col;
+			ctx.lineWidth = this.outline*1;
+			//fix graphical errors with custom fonts, where text gets spiky
+			ctx.lineJoin = "round";
+		}
+		else
+		{
+			ctx.fillStyle = col;
+		}
+		//draw a stroke around the text
+		if(this.stroke && !this.outline)
+		{
+			ctx.lineWidth = this.stroke.width;
+			ctx.strokeStyle = this.stroke.color;
+			ctx.lineJoin = "round";
+		}
 		
 		this._drawText(this._prepContext(ctx));
 		return true;

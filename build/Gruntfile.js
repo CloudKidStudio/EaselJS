@@ -11,7 +11,7 @@ module.exports = function (grunt) {
 				name: 'easeljs',
 
 				// Setup doc names / paths.
-				docsName: '<%= pkg.name %>_docs-<%= version %>',
+				docsName: '<%= pkg.name %>_docs',
 				docsZip: "<%= docsName %>.zip",
 
 				// Setup watch to watch the source and rebuild when it changes.  Also livereload
@@ -63,8 +63,8 @@ module.exports = function (grunt) {
 					},
 					build: {
 						files: {
-							'output/<%= pkg.name.toLowerCase() %>-<%= version %>.min.js': getConfigValue('easel_source'),
-							'output/movieclip-<%= version %>.min.js': getConfigValue('movieclip_source')
+							'output/<%= pkg.name.toLowerCase() %>.min.js': getConfigValue('easel_source'),
+							'output/movieclip.min.js': getConfigValue('movieclip_source')
 						}
 					}
 				},
@@ -103,12 +103,12 @@ module.exports = function (grunt) {
 					},
 					build: {
 						files: {
-							'output/<%= pkg.name.toLowerCase() %>-<%= version %>.combined.js': combineSource(
+							'output/<%= pkg.name.toLowerCase() %>.combined.js': combineSource(
 									[
 										{cwd: '', config:'config.json', source:'easel_source'}
 									]
 							),
-							'output/movieclip-<%= version %>.combined.js': combineSource(
+							'output/movieclip.combined.js': combineSource(
 									[
 										{cwd: '', config:'config.json', source:'movieclip_source'}
 									]
@@ -181,7 +181,7 @@ module.exports = function (grunt) {
 					},
 					src: {
 						files: [
-							{expand: true, cwd:'./output/', src: '*<%=version %>*.js', dest: '../lib/'}
+							{expand: true, cwd:'./output/', src: '**.js', dest: '../lib/'}
 						]
 					}
 				},

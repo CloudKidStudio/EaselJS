@@ -112,3 +112,13 @@ Represents a rectangle as defined by the points (x, y) and (x+width, y+height).
 
 **Point**
 Represents a point on a 2 dimensional x / y coordinate system.
+
+## SpringRoll specific changes
+* Version numbers have been removed from built files.
+* DisplayObjects have a hitShape property, which overrides hitArea/default hit testing with the geometric shape that hitShape is set to.
+* Bitmap doesn't attempt to draw sourceRects with a width or height of 0 (or less).
+* Container.removeAllChildren() is optionally recursive, pass true as a parameter.
+* Time based MovieClips have been redone. Now they track an elapsed time which counts from the start of their timeline. This allows for greater control over playback, including strict syncing to audio.
+* Text allows for drawing stroked text. An graphical issue with custom fonts has also been fixed.
+* ColorFilter now attempts to account for browsers that don't handle pixel manipulation properly.
+* Rectangle.contains() allows for a Point or Rectangle to be passed for the first parameter.

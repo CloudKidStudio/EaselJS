@@ -69,7 +69,7 @@ this.createjs = this.createjs||{};
         //for math purposes, ensure that this is greater than startAngle
         if(this.endAngle < this.startAngle)
             this.endAngle += 360;
-    }
+    };
 
     var p = Sector.prototype;
 
@@ -82,7 +82,7 @@ this.createjs = this.createjs||{};
     p.clone = function()
     {
         return new Sector(this.x, this.y, this.radius, this.startAngle, this.endAngle);
-    }
+    };
 
     /**
      * Checks if the x, and y coords passed to this function are contained within this circle
@@ -116,10 +116,10 @@ this.createjs = this.createjs||{};
         //make the angle in the same space as the sector
         while(angle < this.startAngle) angle += 360;
         return angle >= this.startAngle && angle <= this.endAngle;
-    }
+    };
 
     // constructor
-    p.constructor = Sector;
+    Sector.constructor = Sector;
 
     createjs.Sector = Sector;
 }());

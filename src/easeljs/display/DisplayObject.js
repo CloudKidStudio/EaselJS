@@ -3,7 +3,7 @@
 * Visit http://createjs.com/ for documentation, updates and examples.
 *
 * Copyright (c) 2010 gskinner.com, inc.
-* 
+*
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
 * files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 * copies of the Software, and to permit persons to whom the
 * Software is furnished to do so, subject to the following
 * conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -370,7 +370,7 @@ this.createjs = this.createjs||{};
 		 * the hit test object were a child of this display object and relative to its regX/Y). The hitArea will be tested
 		 * using only its own `alpha` value regardless of the alpha value on the target display object, or the target's
 		 * ancestors (parents).
-		 * 
+		 *
 		 * If set on a {{#crossLink "Container"}}{{/crossLink}}, children of the Container will not receive mouse events.
 		 * This is similar to setting {{#crossLink "mouseChildren"}}{{/crossLink}} to false.
 		 *
@@ -380,6 +380,17 @@ this.createjs = this.createjs||{};
 		 * @default null
 		 */
 		this.hitArea = null;
+		
+		/**
+		* A createjs.Rectangle, createjs.Circle, createjs.Ellipse, createjs.Sector, or
+		* createjs.Polygon object used for all hit testing.
+		* This is used in place of hitArea or pixel testing, and should be much faster in addition
+		* to working on stages that contain cross domain images. It does not respect masking, however.
+		* @property hitShape
+		* @type {Rectangle|Circle|Ellipse|Polygon|Sector}
+		* @default null
+		*/
+		this.hitShape = null;
 		
 		/**
 		 * A CSS cursor (ex. "pointer", "help", "text", etc) that will be displayed when the user hovers over this display
@@ -537,7 +548,7 @@ this.createjs = this.createjs||{};
 
 // events:
 	/**
-	 * Dispatched when the user presses their left mouse button over the display object. See the 
+	 * Dispatched when the user presses their left mouse button over the display object. See the
 	 * {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event mousedown
 	 * @since 0.6.0
@@ -558,7 +569,7 @@ this.createjs = this.createjs||{};
 	 */
 	 
 	/**
-	 * Dispatched when the user's mouse enters this display object. This event must be enabled using 
+	 * Dispatched when the user's mouse enters this display object. This event must be enabled using
 	 * {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}. See also {{#crossLink "DisplayObject/rollover:event"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event mouseover
@@ -566,7 +577,7 @@ this.createjs = this.createjs||{};
 	 */
 
 	/**
-	 * Dispatched when the user's mouse leaves this display object. This event must be enabled using 
+	 * Dispatched when the user's mouse leaves this display object. This event must be enabled using
 	 * {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}. See also {{#crossLink "DisplayObject/rollout:event"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event mouseout
@@ -577,7 +588,7 @@ this.createjs = this.createjs||{};
 	 * This event is similar to {{#crossLink "DisplayObject/mouseover:event"}}{{/crossLink}}, with the following
 	 * differences: it does not bubble, and it considers {{#crossLink "Container"}}{{/crossLink}} instances as an
 	 * aggregate of their content.
-	 * 
+	 *
 	 * For example, myContainer contains two overlapping children: shapeA and shapeB. The user moves their mouse over
 	 * shapeA and then directly on to shapeB. With a listener for {{#crossLink "mouseover:event"}}{{/crossLink}} on
 	 * myContainer, two events would be received, each targeting a child element:<OL>
@@ -586,7 +597,7 @@ this.createjs = this.createjs||{};
 	 * </OL>
 	 * However, with a listener for "rollover" instead, only a single event is received when the mouse first enters
 	 * the aggregate myContainer content (target=myContainer).
-	 * 
+	 *
 	 * This event must be enabled using {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event rollover
@@ -597,7 +608,7 @@ this.createjs = this.createjs||{};
 	 * This event is similar to {{#crossLink "DisplayObject/mouseout:event"}}{{/crossLink}}, with the following
 	 * differences: it does not bubble, and it considers {{#crossLink "Container"}}{{/crossLink}} instances as an
 	 * aggregate of their content.
-	 * 
+	 *
 	 * For example, myContainer contains two overlapping children: shapeA and shapeB. The user moves their mouse over
 	 * shapeA, then directly on to shapeB, then off both. With a listener for {{#crossLink "mouseout:event"}}{{/crossLink}}
 	 * on myContainer, two events would be received, each targeting a child element:<OL>
@@ -606,7 +617,7 @@ this.createjs = this.createjs||{};
 	 * </OL>
 	 * However, with a listener for "rollout" instead, only a single event is received when the mouse leaves
 	 * the aggregate myContainer content (target=myContainer).
-	 * 
+	 *
 	 * This event must be enabled using {{#crossLink "Stage/enableMouseOver"}}{{/crossLink}}.
 	 * See the {{#crossLink "MouseEvent"}}{{/crossLink}} class for a listing of event properties.
 	 * @event rollout
@@ -764,7 +775,7 @@ this.createjs = this.createjs||{};
 	 *
 	 * Note that filters need to be defined <em>before</em> the cache is applied. Check out the {{#crossLink "Filter"}}{{/crossLink}}
 	 * class for more information. Some filters (ex. BlurFilter) will not work as expected in conjunction with the scale param.
-	 * 
+	 *
 	 * Usually, the resulting cacheCanvas will have the dimensions width*scale by height*scale, however some filters (ex. BlurFilter)
 	 * will add padding to the canvas dimensions.
 	 *
@@ -877,7 +888,7 @@ this.createjs = this.createjs||{};
 	 * @method localToGlobal
 	 * @param {Number} x The x position in the source display object to transform.
 	 * @param {Number} y The y position in the source display object to transform.
-	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned. 
+	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned.
 	 * @return {Point} A Point instance with x and y properties correlating to the transformed coordinates
 	 * on the stage.
 	 **/
@@ -902,7 +913,7 @@ this.createjs = this.createjs||{};
 	 * @method globalToLocal
 	 * @param {Number} x The x position on the stage to transform.
 	 * @param {Number} y The y position on the stage to transform.
-	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned. 
+	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned.
 	 * @return {Point} A Point instance with x and y properties correlating to the transformed position in the
 	 * display object's coordinate space.
 	 **/
@@ -923,7 +934,7 @@ this.createjs = this.createjs||{};
 	 * @param {Number} x The x position in the source display object to transform.
 	 * @param {Number} y The y position on the source display object to transform.
 	 * @param {DisplayObject} target The target display object to which the coordinates will be transformed.
-	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned. 
+	 * @param {Point | Object} [pt] An object to copy the result into. If omitted a new Point object with x/y properties will be returned.
 	 * @return {Point} Returns a Point instance with x and y properties correlating to the transformed position
 	 * in the target's coordinate space.
 	 **/
@@ -1006,7 +1017,7 @@ this.createjs = this.createjs||{};
 	 **/
 	p.getConcatenatedDisplayProps = function(props) {
 		props = props ? props.identity() : new createjs.DisplayProps();
-		var o = this, mtx = o.getMatrix(props.matrix); 
+		var o = this, mtx = o.getMatrix(props.matrix);
 		do {
 			props.prepend(o.visible, o.alpha, o.shadow, o.compositeOperation);
 			
@@ -1036,14 +1047,22 @@ this.createjs = this.createjs||{};
 	 * local Point.
 	*/
 	p.hitTest = function(x, y) {
-		var ctx = DisplayObject._hitTestContext;
-		ctx.setTransform(1, 0, 0, 1, -x, -y);
-		this.draw(ctx);
+		//if a hitShape is defined, check that instead of drawing to a canvas to check pixels.
+		if(this.hitShape)
+		{
+			return this.hitShape.contains(x, y);
+		}
+		else
+		{
+			var ctx = DisplayObject._hitTestContext;
+			ctx.setTransform(1, 0, 0, 1, -x, -y);
+			this.draw(ctx);
 
-		var hit = this._testHit(ctx);
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.clearRect(0, 0, 2, 2);
-		return hit;
+			var hit = this._testHit(ctx);
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.clearRect(0, 0, 2, 2);
+			return hit;
+		}
 	};
 	
 	/**
@@ -1067,11 +1086,11 @@ this.createjs = this.createjs||{};
 	/**
 	 * Returns a rectangle representing this object's bounds in its local coordinate system (ie. with no transformation).
 	 * Objects that have been cached will return the bounds of the cache.
-	 * 
-	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use 
+	 *
+	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use
 	 * {{#crossLink "DisplayObject/setBounds"}}{{/crossLink}} so that they are included when calculating Container
 	 * bounds.
-	 * 
+	 *
 	 * <table>
 	 * 	<tr><td><b>All</b></td><td>
 	 * 		All display objects support setting bounds manually using setBounds(). Likewise, display objects that
@@ -1100,22 +1119,22 @@ this.createjs = this.createjs||{};
 	 * 		to (x=0,y=0).
 	 * 	</td></tr>
 	* </table>
-	 * 
+	 *
 	 * Bounds can be expensive to calculate for some objects (ex. text, or containers with many children), and
 	 * are recalculated each time you call getBounds(). You can prevent recalculation on static objects by setting the
 	 * bounds explicitly:
-	 * 
+	 *
 	 * 	var bounds = obj.getBounds();
 	 * 	obj.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
 	 * 	// getBounds will now use the set values, instead of recalculating
-	 * 
+	 *
 	 * To reduce memory impact, the returned Rectangle instance may be reused internally; clone the instance or copy its
 	 * values if you need to retain it.
-	 * 
+	 *
 	 * 	var myBounds = obj.getBounds().clone();
 	 * 	// OR:
 	 * 	myRect.copy(obj.getBounds());
-	 * 
+	 *
 	 * @method getBounds
 	 * @return {Rectangle} A Rectangle instance representing the bounds, or null if bounds are not available for this
 	 * object.
@@ -1133,14 +1152,14 @@ this.createjs = this.createjs||{};
 	/**
 	 * Returns a rectangle representing this object's bounds in its parent's coordinate system (ie. with transformations applied).
 	 * Objects that have been cached will return the transformed bounds of the cache.
-	 * 
-	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use 
+	 *
+	 * Not all display objects can calculate their own bounds (ex. Shape). For these objects, you can use
 	 * {{#crossLink "DisplayObject/setBounds"}}{{/crossLink}} so that they are included when calculating Container
 	 * bounds.
-	 * 
+	 *
 	 * To reduce memory impact, the returned Rectangle instance may be reused internally; clone the instance or copy its
 	 * values if you need to retain it.
-	 * 
+	 *
 	 * Container instances calculate aggregate bounds for all children that return bounds via getBounds.
 	 * @method getTransformedBounds
 	 * @return {Rectangle} A Rectangle instance representing the bounds, or null if bounds are not available for this object.
@@ -1153,7 +1172,7 @@ this.createjs = this.createjs||{};
 	 * Allows you to manually specify the bounds of an object that either cannot calculate their own bounds (ex. Shape &
 	 * Text) for future reference, or so the object can be included in Container bounds. Manually set bounds will always
 	 * override calculated bounds.
-	 * 
+	 *
 	 * The bounds should be specified in the object's local (untransformed) coordinates. For example, a Shape instance
 	 * with a 25px radius circle centered at 0,0 would have bounds of (-25, -25, 50, 50).
 	 * @method setBounds

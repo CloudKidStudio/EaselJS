@@ -43,7 +43,7 @@ this.createjs = this.createjs||{};
          * @default 0
          */
         this.radius = radius || 0;
-    }
+    };
 
     var p = Circle.prototype;
 
@@ -56,7 +56,7 @@ this.createjs = this.createjs||{};
     p.clone = function()
     {
         return new Circle(this.x, this.y, this.radius);
-    }
+    };
 
     /**
      * Checks if the x, and y coords passed to this function are contained within this circle
@@ -85,10 +85,10 @@ this.createjs = this.createjs||{};
         dy *= dy;
 
         return (dx + dy <= r2);
-    }
+    };
 
     // constructor
-    p.constructor = Circle;
+    Circle.constructor = Circle;
 
     createjs.Circle = Circle;
 }());
