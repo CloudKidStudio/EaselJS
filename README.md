@@ -122,3 +122,4 @@ Represents a point on a 2 dimensional x / y coordinate system.
 * Text allows for drawing stroked text. An graphical issue with custom fonts has also been fixed.
 * ColorFilter now attempts to account for browsers that don't handle pixel manipulation properly.
 * Rectangle.contains() allows for a Point or Rectangle to be passed for the first parameter.
+* Touch no longer breaks when Touch.disable() is called on a stage that did not have touch in the first place.

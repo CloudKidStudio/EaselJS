@@ -143,6 +143,7 @@ this.createjs = this.createjs||{};
 	Touch._IOS_disable = function(stage) {
 		var canvas = stage.canvas;
 		if (!canvas) { return; }
+		if(!stage.__touch) return;
 		var f = stage.__touch.f;
 		canvas.removeEventListener("touchstart", f, false);
 		canvas.removeEventListener("touchmove", f, false);
@@ -211,6 +212,9 @@ this.createjs = this.createjs||{};
 	 * @static
 	 **/
 	Touch._IE_disable = function(stage) {
+		
+		if(!stage.__touch) return;
+		
 		var f = stage.__touch.f;
 
 		if (window.navigator["pointerEnabled"] === undefined) {
