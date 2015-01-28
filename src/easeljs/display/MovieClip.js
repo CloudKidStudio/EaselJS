@@ -493,7 +493,7 @@ this.createjs = this.createjs||{};
 		//to allow greater control over playback, like syncing the animation to audio.
 		if(!this.paused)
 		{
-			if(fps > 0)
+			if(this._framerate > 0)
 			{
 				if(time)
 					this._t += time * 0.001;//milliseconds -> seconds
