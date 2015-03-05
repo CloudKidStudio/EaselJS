@@ -558,7 +558,7 @@ this.createjs = this.createjs||{};
 		if (this.tickChildren) {
 			for (var i=this.children.length-1; i>=0; i--) {
 				var child = this.children[i];
-				if (child.tickEnabled && child._tick) { child._tick(evtObj); }
+				if ((child.tickEnabled || child.tickChildren) && child._tick) { child._tick(evtObj); }
 			}
 		}
 		this.DisplayObject__tick(evtObj);
