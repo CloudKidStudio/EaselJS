@@ -124,3 +124,4 @@ Represents a point on a 2 dimensional x / y coordinate system.
 * Rectangle.contains() allows for a Point or Rectangle to be passed for the first parameter.
 * Touch no longer breaks when Touch.disable() is called on a stage that did not have touch in the first place.
 * Containers that are not tickEnabled still pass ticks on to their children if tickChildren is true.
+* Changed how MovieClips fetch the framerate from parents to properly set the new _duration as well.
