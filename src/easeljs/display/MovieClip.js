@@ -482,11 +482,11 @@ this.createjs = this.createjs||{};
 		
 		if(!this._framerate)
 		{
-			var o=this, fps = o.framerate;
+			var o=this, fps = o._framerate;
 			while ((o = o.parent) && fps == null) {
 				if (o.mode == independent) { fps = o._framerate; }
 			}
-			this._framerate = fps;
+			this.framerate = fps;
 		}
 		
 		//SpringRoll replacement, using an elapsed time from the beginning of the timeline
