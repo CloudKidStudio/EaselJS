@@ -499,7 +499,8 @@ this.createjs = this.createjs||{};
 					this._t += time * 0.001;//milliseconds -> seconds
 				if(this._t > this._duration)
 					this._t = this.timeline.loop ? this._t - this._duration : this._duration;
-				this._prevPosition = Math.floor(this._t * this._framerate);
+				//add a tiny amount to account for potential floating point errors
+				this._prevPosition = Math.floor(this._t * this._framerate + 0.00000001);
 				if(this._prevPosition > this.timeline.duration)
 					this._prevPosition = this.timeline.duration;
 			}
