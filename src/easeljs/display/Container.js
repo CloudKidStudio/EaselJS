@@ -635,9 +635,8 @@ this.createjs = this.createjs||{};
 				}
 				if(result)
 				{
-					if (activeListener) { return this; }
-					else if (arr) { arr.push(child); }
-					else { return child; }
+					if (arr) { arr.push(child); }
+					else { return (mouse && !this.mouseChildren) ? this : child; }
 				}
 				else
 					continue;
