@@ -423,7 +423,11 @@ this.createjs = this.createjs||{};
 	p._drawTextLine = function(ctx, text, y) {
 		// Chrome 17 will fail to draw the text if the last param is included but null, so we feed it a large value instead:
 		if (this.outline) { ctx.strokeText(text, 0, y, this.maxWidth||0xFFFF); }
-		else { ctx.fillText(text, 0, y, this.maxWidth||0xFFFF); }
+		else {
+			if(this.stroke)
+				ctx.strokeText(text, 0, y, this.maxWidth || 0xFFFF);
+			ctx.fillText(text, 0, y, this.maxWidth||0xFFFF);
+		}
 	};
 	
 	
